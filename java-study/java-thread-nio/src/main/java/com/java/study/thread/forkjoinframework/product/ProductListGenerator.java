@@ -1,4 +1,4 @@
-package com.java.study.thread.forkjoinframework;
+package com.java.study.thread.forkjoinframework.product;
 
 import java.util.ArrayList;
 import java.util.List;

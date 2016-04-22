@@ -1,4 +1,4 @@
-package com.java.study.thread.forkjoinframework;
+package com.java.study.thread.forkjoinframework.product;
 
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
