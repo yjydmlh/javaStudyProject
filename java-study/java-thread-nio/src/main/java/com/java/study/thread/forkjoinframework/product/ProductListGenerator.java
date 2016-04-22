@@ -10,8 +10,9 @@ public class ProductListGenerator {
         Product product = null;
         for (int i = 0; i < size; i++) {
             product = new Product();
-            product.setName("product" + 1);
+            product.setName("product" + i);
             product.setPrice(10);
+            ret.add(product);
         }
         return ret;
     }

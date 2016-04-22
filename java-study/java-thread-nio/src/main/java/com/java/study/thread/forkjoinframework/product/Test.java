@@ -8,9 +8,9 @@ public class Test {
 
     public static void main(String[] args) {
         ProductListGenerator pg = new ProductListGenerator();
-        List<Product> products = pg.generate(Integer.MAX_VALUE);
+        List<Product> products = pg.generate(100);
 
-        Task task = new Task(products, 0, products.size(), 0.20);
+        Task task = new Task(products, 0, products.size(), 0.01);
 
         ForkJoinPool pool = new ForkJoinPool();
         pool.execute(task);
