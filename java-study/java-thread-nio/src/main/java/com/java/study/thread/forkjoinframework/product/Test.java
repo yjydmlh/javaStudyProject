@@ -8,7 +8,7 @@ public class Test {
 
     public static void main(String[] args) {
         ProductListGenerator pg = new ProductListGenerator();
-        List<Product> products = pg.generate(10000);
+        List<Product> products = pg.generate(Integer.MAX_VALUE);
 
         Task task = new Task(products, 0, products.size(), 0.20);
 
