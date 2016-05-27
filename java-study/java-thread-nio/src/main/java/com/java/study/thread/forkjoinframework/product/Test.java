@@ -8,9 +8,9 @@ public class Test {
 
     public static void main(String[] args) {
         ProductListGenerator pg = new ProductListGenerator();
-        List<Product> products = pg.generate(100);
+        List<Product> products = pg.generate(100000000);
 
-        Task task = new Task(products, 0, products.size(), 0.01);
+        Task task = new Task(products, 0, products.size(), 0.2);
 
         ForkJoinPool pool = new ForkJoinPool();
         pool.execute(task);
@@ -31,12 +31,12 @@ public class Test {
             System.out.println("main:The process has completed normally.");
         }
 
-        for (int i = 0; i < products.size(); i++) {
-            Product product = products.get(i);
-            if (product.getPrice() != 12) {
-                System.out.printf("product %s:%f\n", product.getName(), product.getPrice());
-            }
-        }
+        //        for (int i = 0; i < products.size(); i++) {
+        //            Product product = products.get(i);
+        //            if (product.getPrice() != 12) {
+        //                System.out.printf("product %s:%f\n", product.getName(), product.getPrice());
+        //            }
+        //        }
         System.out.println("main:end of the program.");
     }
 
