@@ -13,7 +13,12 @@ public class ArrayTableTest {
     }
 
     public static void table(){
-        List<Integer> rowsTable= Lists.newArrayList(1,2);
+        List<Integer> p = Lists.newArrayList();
+        p.add(1);
+        p.add(2);
+        p.add(3);
+        List<Integer> rowsTable= Lists.newArrayList(p);
+        
         //Create Column Table
         List<String> columnsTables=Lists.newArrayList("First Name","Last Name","Age","sex");
        //ArrayTable is Fix Rows And Columns
