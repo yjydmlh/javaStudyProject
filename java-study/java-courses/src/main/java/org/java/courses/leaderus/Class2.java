@@ -7,6 +7,7 @@ import java.util.Random;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * 定义Java类Salary {String name, int baseSalary, int bonus
@@ -46,7 +47,9 @@ public class Class2 {
                 return 1;
             }
         });
-        System.out.println(l.subList(0, 10));
+        for(int i=0;i<10;i++){
+        	System.out.println(l.get(i));
+        }
     }
     
     
