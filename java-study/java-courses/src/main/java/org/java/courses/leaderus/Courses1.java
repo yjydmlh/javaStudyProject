@@ -1,4 +1,4 @@
-package org.java.courses;
+package org.java.courses.leaderus;
 
 public class Courses1 {
 
