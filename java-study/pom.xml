@@ -30,6 +30,7 @@
   <modules>
     <module>java-thread-nio</module>
     <module>java8</module>
+    <module>java-courses</module>
   </modules>
   <build>
     <plugins>
