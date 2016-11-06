@@ -30,7 +30,7 @@
 			<version>3.8.1</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency> 
+		<dependency>    
 			<groupId>com.github.lwhite1</groupId>
 			<artifactId>tablesaw</artifactId>
 			<version>0.7.6.3</version>

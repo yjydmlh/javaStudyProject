@@ -43,7 +43,3 @@ public class ArrayTableTest {
     }
     
 }
-
-class Person{
-    
-}

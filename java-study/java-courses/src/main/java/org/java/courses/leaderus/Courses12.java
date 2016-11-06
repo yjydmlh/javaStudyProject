@@ -4,44 +4,85 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.nio.CharBuffer;
 import java.util.Random;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import com.java.study.section1.Person;
+import com.google.common.collect.Table.Cell;
 
 import lombok.Getter;
 import lombok.Setter;
 
+import sun.misc.Unsafe;
+
 public class Courses12 {
 
 	 public static char[] dic = new char[]{'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
-	    
-	   public static String path = "e:/myfile/";
+	   
+	   public static String path = "e:/";
 	   public static String fileName="user.txt";
 	   
 	   static Table<Integer, String, Integer> aTable = HashBasedTable.create();
+	   static Table<Integer, String, Integer> bTable = HashBasedTable.create();
+	   
 	    public static void main(String[] args) throws IOException {
-	        writeFile();
+//	        writeFile();
+	    	readFile();
+	    	readFile2();
 	        System.out.println(aTable.size());
+	        System.out.println(bTable.size());
 	        System.out.println(aTable.row(1));
+	        System.out.println(filterByAge(aTable,6,11));
 	    }
 
+	    public static long filterByAge(Table<Integer, String, Integer> aTable,int startAge,int endAge){
+	    	long p = aTable.cellSet().parallelStream().filter(new Predicate<Cell<Integer, String, Integer>> () {
+				@Override
+				public boolean test(Cell<Integer, String, Integer> t) {
+					if(startAge<=t.getValue() && endAge>=t.getValue()){
+						return true;
+					}
+					return false;
+				}
+			}).count();
+	    	return p;
+	    } 
+	    
+	    public static void readFile2() throws IOException{
+	        File file = new File(path+fileName);
+	        FileReader reader = new FileReader(file);
+	        LineNumberReader read = new LineNumberReader(reader);
+	        String line = read.readLine();
+	        while(line != null){
+	        	String[] d = line.trim().split(",");
+	        	bTable.put(Integer.valueOf(d[0]),d[1] , Integer.valueOf(d[2]));
+	        	line = read.readLine();
+	        }
+	    }
+	    
 	    public static void readFile() throws IOException{
 	        File file = new File(path+fileName);
 	        FileReader reader = new FileReader(file);
-	        CharBuffer target = CharBuffer.allocate(1024);
-	        StringBuilder sb = new StringBuilder();
-	        char[] dst = new char[1024];
-	        while(reader.read(target)!=-1){
-	            target.get(dst);
-	            sb.append(dst);
-	        }
+	        LineNumberReader read = new LineNumberReader(reader);
+	        read.lines().parallel().forEach(new Consumer<String>() {
+				@Override
+				public void accept(String t) {
+					String[] d = t.trim().split(",");
+					aTable.put(Integer.valueOf(d[0]),d[1] , Integer.valueOf(d[2]));
+				}
+			});
 	    }
 	    
 	    public static void writeFile() throws IOException{
 	        File file = new File(path+fileName);
+	        if(file.exists()){
+	        	file.delete();
+	        }
+	        file.createNewFile();
 	        FileWriter fw = new FileWriter(file);
 	        Random random = new Random();
 	        StringBuilder sb = new StringBuilder();
@@ -50,7 +91,6 @@ public class Courses12 {
 	            p.setAge(random.nextInt(18));
 	            p.setName(getName());
 	            p.setId(i);
-	            aTable.put(p.getId(), p.getName(), p.getAge());
 	            sb.append(p.toString()+"\n");
 	            if(i%500000 == 0){
 	                fw.write(sb.toString());
