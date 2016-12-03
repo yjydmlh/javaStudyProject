@@ -1,10 +1,18 @@
 package org.java.courses.leaderus;
 
+import javolution.util.FastSortedTable;
+import javolution.util.FastTable;
+
 public class Class3 {
 
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-
+    	FastSortedTable<String> t = new FastSortedTable<>();
+    	t.add("3qwr");
+    	t.add("3fwr");
+    	t.add("3hwr");
+    	t.sort();
+    	System.out.println(t);
     }
 
     /**
