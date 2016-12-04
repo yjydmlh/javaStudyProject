@@ -1,5 +1,6 @@
 package org.java.courses.leaderus.c7;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 import org.java.courses.leaderus.util.UnsafeUtil;
@@ -14,7 +15,7 @@ public class Section7 {
 
 	public static Unsafe unsafe = UnsafeUtil.getInstance();
 
-	public static void main(String[] args) throws InstantiationException {
+	public static void main(String[] args) throws Exception {
 		// memPageTest();
 		 unsafeNewObj();
 //		pointCompressTest();
@@ -63,25 +64,39 @@ public class Section7 {
 	 * static { a=10; } Unsafe创建上述类的一个实例，看看a是多少，并做解释 ，
 	 * final类型的变量只能在定义的时候或者静态代码段里初始化，初始化以后值不可改变
 	 * unsafe.allocateInstance函数不调用构造函数直接创建一个类的实例
+	 * @throws SecurityException 
+	 * @throws NoSuchFieldException 
+	 * @throws IllegalAccessException 
+	 * @throws IllegalArgumentException 
 	 * 
 	 */
-	public static void unsafeNewObj() throws InstantiationException {
+	public static void unsafeNewObj() throws InstantiationException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+		System.out.println("is pointer  compress:"+UnsafeUtil.isPointerCompress());
 		MyClass obj = (MyClass) unsafe.allocateInstance(MyClass.class);
-		System.out.println(obj.getA());
+		Field field = MyClass.class.getDeclaredField("a");
+		long offset = unsafe.staticFieldOffset(field);
+		System.out.println("get value of a by instance before modify ,a="+obj.getA());
+		System.out.println("get value of a by unsafe before modify ,a="+unsafe.getLong(obj, offset));
+		unsafe.putLong(obj, offset, 200);
+		System.out.println("get value of a by instance after modify ,a="+obj.getA());
+		System.out.println("get value of a by unsafe after modify ,a="+unsafe.getLong(obj, offset));
 	}
 
 }
 
 class MyClass {
 	
-	private final static long a;
+	private final static long a=20;
 
+	public MyClass(){
+		System.out.println("constructor，a="+a);
+	}
+	
 	public long getA() {
 		return a;
 	}
-
 	static {
-		a = 10;
+//		a = 10;
 		System.out.println("static segment a=" + a);
 	}
 }

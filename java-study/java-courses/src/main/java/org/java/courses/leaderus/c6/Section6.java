@@ -3,6 +3,7 @@ package org.java.courses.leaderus.c6;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 
+import org.java.courses.leaderus.util.UnsafeUtil;
 import org.osgi.framework.SynchronousBundleListener;
 
 import sun.misc.Unsafe;
@@ -32,8 +33,8 @@ public class Section6 {
 //		unsafeArray();
 //		 unsafeArrayOffset();
 //		System.out.println(1<<3);
-//		unsafeGetLongTest();
-		unsafeNewObjTest();
+		unsafeGetLongTest();
+//		unsafeNewObjTest();
 	}
 
 	public static void unsafeNewObjTest() throws InstantiationException{
@@ -45,16 +46,23 @@ public class Section6 {
 	 * -XX:+UseCompressedOops
 	 */
 	public static void unsafeGetLongTest(){
+		System.out.println(UnsafeUtil.isPointerCompress());
 		Target helperArray[] 	= new Target[10];
 		helperArray[0] 		= new Target();
-		long baseOffset 		= unsafe.arrayBaseOffset(Target[].class);
+//		long baseOffset 		= unsafe.arrayBaseOffset(Target[].class);
 		//target的绝对地址
-		long addressOfObject	= unsafe.getLong(helperArray, baseOffset);
-		System.out.println(baseOffset);
+		long addressOfObject	= UnsafeUtil.getObjectReferenceAddress(new Target());
+//		System.out.println(baseOffset);
 		System.out.println(addressOfObject);
 		System.out.println("addressSize="+unsafe.addressSize());
 		//获取target的id的值
-		System.out.println(unsafe.getInt(addressOfObject+12));
+		if(UnsafeUtil.isPointerCompress()){
+			//指针压缩，偏移量是12
+			System.out.println(unsafe.getInt(addressOfObject+12));
+		}else{
+			//指针未压缩，偏移量是16
+			System.out.println(unsafe.getInt(addressOfObject+16));
+		}
 	}
 	
 	public static void unsafeArrayOffset() {
