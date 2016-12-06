@@ -2,6 +2,7 @@ package org.java.courses.leaderus.c7;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Random;
 
 import org.java.courses.leaderus.util.UnsafeUtil;
 
@@ -17,8 +18,46 @@ public class Section7 {
 
 	public static void main(String[] args) throws Exception {
 		// memPageTest();
-		 unsafeNewObj();
+//		 unsafeNewObj();
 //		pointCompressTest();
+		buildRecordsInHeap();
+//		buildRecordsOutHeap();
+		
+	}
+
+	public static void myRecordSort() throws Exception{
+		MyRecord mr = (MyRecord)unsafe.allocateInstance(MyRecord.class);
+		MyRecord[] records = buildRecordsInHeap();
+	}
+	
+	private static MyRecord[] buildRecordsOutHeap() throws InstantiationException {
+		long start = System.currentTimeMillis();
+		MyRecord[] records = new MyRecord[1000000];
+		Random rand = new Random();
+		for(int i=0;i<1000000;i++){
+			MyRecord mr = (MyRecord)unsafe.allocateInstance(MyRecord.class);
+			mr.col1 = rand.nextInt(Integer.MAX_VALUE);
+			mr.col2 = (short) rand.nextInt(Integer.MAX_VALUE);
+			mr.id = rand.nextInt(Integer.MAX_VALUE);
+			records[i]=mr;
+		}
+		System.out.println("堆堆外创建耗时："+(System.currentTimeMillis() - start));
+		return records;
+	}
+	
+	private static MyRecord[] buildRecordsInHeap() throws InstantiationException {
+		long start = System.currentTimeMillis();
+		MyRecord[] records = new MyRecord[1000000];
+		Random rand = new Random();
+		for(int i=0;i<1000000;i++){
+			MyRecord mr = new MyRecord();
+			mr.col1 = rand.nextInt(Integer.MAX_VALUE);
+			mr.col2 = (short) rand.nextInt(Integer.MAX_VALUE);
+			mr.id = rand.nextInt(Integer.MAX_VALUE);
+			records[i]=mr;
+		}
+		System.out.println("堆内创建耗时："+(System.currentTimeMillis() - start));
+		return records;
 	}
 
 	/**

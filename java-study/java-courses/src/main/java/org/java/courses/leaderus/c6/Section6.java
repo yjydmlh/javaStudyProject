@@ -3,6 +3,7 @@ package org.java.courses.leaderus.c6;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 
+import org.java.courses.leaderus.c7.MyRecord;
 import org.java.courses.leaderus.util.UnsafeUtil;
 import org.osgi.framework.SynchronousBundleListener;
 
@@ -33,13 +34,16 @@ public class Section6 {
 //		unsafeArray();
 //		 unsafeArrayOffset();
 //		System.out.println(1<<3);
-		unsafeGetLongTest();
+//		unsafeGetLongTest();
+//		unsafeNewObjTest();
+		printOffset();
 //		unsafeNewObjTest();
 	}
 
 	public static void unsafeNewObjTest() throws InstantiationException{
 		Target t = (Target)unsafe.allocateInstance(Target.class);
-		System.out.println(t.getId());
+		long tAddress = UnsafeUtil.getObjectReferenceAddress(t);
+		System.out.println(unsafe.getInt(t, tAddress+12));
 	}
 	
 	/**
@@ -49,7 +53,6 @@ public class Section6 {
 		System.out.println(UnsafeUtil.isPointerCompress());
 		Target helperArray[] 	= new Target[10];
 		helperArray[0] 		= new Target();
-//		long baseOffset 		= unsafe.arrayBaseOffset(Target[].class);
 		//target的绝对地址
 		long addressOfObject	= UnsafeUtil.getObjectReferenceAddress(new Target());
 //		System.out.println(baseOffset);
@@ -97,7 +100,7 @@ public class Section6 {
 	}
 
 	public static void printOffset() {
-		Field[] fields = MyClass.class.getDeclaredFields();
+		Field[] fields = MyRecord.class.getDeclaredFields();
 		for (int i = 0; i < fields.length; i++) {
 			long cOffset = unsafe.objectFieldOffset(fields[i]);
 			System.out.println(fields[i] + ",offset=" + cOffset);
