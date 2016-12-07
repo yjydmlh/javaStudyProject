@@ -1,15 +1,16 @@
 package org.java.courses.leaderus.c7;
 
 import java.lang.reflect.Field;
-import java.util.List;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Random;
 
 import org.java.courses.leaderus.util.UnsafeUtil;
 
 import com.sun.management.VMOption;
 
+import sun.management.HotSpotDiagnostic;
 import sun.misc.Unsafe;
-import sun.management.*;
 
 @SuppressWarnings("restriction")
 public class Section7 {
@@ -20,14 +21,25 @@ public class Section7 {
 		// memPageTest();
 //		 unsafeNewObj();
 //		pointCompressTest();
-		buildRecordsInHeap();
+//		buildRecordsInHeap();
 //		buildRecordsOutHeap();
-		
+	    myRecordSort();
 	}
 
 	public static void myRecordSort() throws Exception{
-		MyRecord mr = (MyRecord)unsafe.allocateInstance(MyRecord.class);
 		MyRecord[] records = buildRecordsInHeap();
+		sortInHeap(records);
+	}
+	
+	private static void sortInHeap(MyRecord[] records){
+	    long start = System.currentTimeMillis();
+	    Arrays.sort(records, new Comparator<MyRecord>() {
+            @Override
+            public int compare(MyRecord o1, MyRecord o2) {
+                return o1.col1 - o2.col1;
+            }
+        });
+	    System.out.println("堆内排序耗时："+(System.currentTimeMillis() - start));
 	}
 	
 	private static MyRecord[] buildRecordsOutHeap() throws InstantiationException {
@@ -103,10 +115,10 @@ public class Section7 {
 	 * static { a=10; } Unsafe创建上述类的一个实例，看看a是多少，并做解释 ，
 	 * final类型的变量只能在定义的时候或者静态代码段里初始化，初始化以后值不可改变
 	 * unsafe.allocateInstance函数不调用构造函数直接创建一个类的实例
-	 * @throws SecurityException 
-	 * @throws NoSuchFieldException 
-	 * @throws IllegalAccessException 
-	 * @throws IllegalArgumentException 
+	 * @throws SecurityException
+	 * @throws NoSuchFieldException
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
 	 * 
 	 */
 	public static void unsafeNewObj() throws InstantiationException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {

@@ -34,13 +34,13 @@ public class QuickSort {
     	int i=l;
     	int j=h;
     	while(i<j){
-    		while(s[i]<pivot && i<h){
+    		while(s[i]<pivot && i<=j){
     			i++;
     		}
-    		while(s[j]>pivot && j>l){
+    		while(s[j]>pivot &&i<=j){
     			j--;
     		}
-    		if(i!=j){
+    		if(i<j){
     			swapNoTmp(s,i,j);
     		}
     	}
