@@ -21,14 +21,23 @@ public class Section7 {
 		// memPageTest();
 //		 unsafeNewObj();
 //		pointCompressTest();
-		buildRecordsInHeap();
-		buildRecordsOutHeap();
+//		buildRecordsInHeap();
+//		buildRecordsOutHeap();
 //	    myRecordSort();
+	    copyMemoryTest();
 	}
 
 	public static void myRecordSort() throws Exception{
 		MyRecord[] records = buildRecordsInHeap();
 		sortInHeap(records);
+	}
+	
+	private static void copyMemoryTest(){
+	    long address = unsafe.allocateMemory(4L);
+	    unsafe.putInt(address, 100);
+	    long otherAddress = unsafe.allocateMemory(4L);
+	    unsafe.copyMemory(address, otherAddress, 4L);
+	    System.out.println(unsafe.getInt(otherAddress));
 	}
 	
 	private static void sortInHeap(MyRecord[] records){
