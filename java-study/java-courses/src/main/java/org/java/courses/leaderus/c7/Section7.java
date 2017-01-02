@@ -21,10 +21,10 @@ public class Section7 {
 		// memPageTest();
 //		 unsafeNewObj();
 //		pointCompressTest();
-//		buildRecordsInHeap();
-//		buildRecordsOutHeap();
+		buildRecordsInHeap();
+		buildRecordsOutHeap();
 //	    myRecordSort();
-	    copyMemoryTest();
+//	    copyMemoryTest();
 	}
 
 	public static void myRecordSort() throws Exception{
@@ -59,36 +59,36 @@ public class Section7 {
 	 * @throws SecurityException
 	 */
 	private static MyRecord[] buildRecordsOutHeap() throws InstantiationException, NoSuchFieldException, SecurityException {
-		MyRecord[] records = new MyRecord[1000000];
+		MyRecord[] records = new MyRecord[10000000];
 		Random rand = new Random();
 		long col1Offset = unsafe.objectFieldOffset(MyRecord.class.getField("col1"));
 		long col2Offset = unsafe.objectFieldOffset(MyRecord.class.getField("col2"));
 		long idOffset = unsafe.objectFieldOffset(MyRecord.class.getField("id"));
 		long start = System.currentTimeMillis();
-		for(int i=0;i<1000000;i++){
-//			MyRecord mr = (MyRecord)unsafe.allocateInstance(MyRecord.class);
-		    MyRecord mr = new MyRecord();
+		for(int i=0;i<records.length;i++){
+			MyRecord mr = (MyRecord)unsafe.allocateInstance(MyRecord.class);
+//		    MyRecord mr = new MyRecord();
 		    unsafe.putInt(mr, col1Offset, rand.nextInt(Integer.MAX_VALUE));
 			unsafe.putShort(mr, col2Offset, (short)rand.nextInt(Integer.MAX_VALUE));
 			unsafe.putInt(mr, idOffset, rand.nextInt(Integer.MAX_VALUE));
 			records[i]=mr;
 		}
-		System.out.println("堆外创建耗时："+(System.currentTimeMillis() - start));
+		System.out.println("unsafe创建"+records.length+"个对象耗时："+(System.currentTimeMillis() - start));
 		return records;
 	}
 	
 	private static MyRecord[] buildRecordsInHeap() throws InstantiationException {
-		MyRecord[] records = new MyRecord[1000000];
+		MyRecord[] records = new MyRecord[10000000];
 		Random rand = new Random();
 		long start = System.currentTimeMillis();
-		for(int i=0;i<1000000;i++){
+		for(int i=0;i<records.length;i++){
 			MyRecord mr = new MyRecord();
 			mr.col1 = rand.nextInt(Integer.MAX_VALUE);
 			mr.col2 = (short) rand.nextInt(Integer.MAX_VALUE);
 			mr.id = rand.nextInt(Integer.MAX_VALUE);
 			records[i]=mr;
 		}
-		System.out.println("堆内创建耗时："+(System.currentTimeMillis() - start));
+		System.out.println("new创建"+records.length+"个对象耗时："+(System.currentTimeMillis() - start));
 		return records;
 	}
 

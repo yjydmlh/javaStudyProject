@@ -1,6 +1,7 @@
 package org.java.courses.leaderus.util;
 
 import java.lang.reflect.Field;
+import java.util.stream.Stream;
 
 import com.sun.management.VMOption;
 
@@ -35,6 +36,26 @@ public class UnsafeUtil {
 		return unsafe;
 	}
 
+	/**
+	 * 计算对象大小
+	 * @param obj
+	 * @return
+	 */
+	public static long  objSize(Object obj){
+		long size = 12l;
+		if(obj == null){
+			return 0l;
+		}
+		Field[] fields = obj.getClass().getDeclaredFields();
+		if(fields.length == 0){
+			return size;
+		}
+		for(int i=0;i<fields.length;i++){
+			Field field = fields[i];
+		}
+		return size;
+	}
+	
 	/**
 	 * 判断指针是否压缩
 	 * 
