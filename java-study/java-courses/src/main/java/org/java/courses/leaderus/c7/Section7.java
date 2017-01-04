@@ -21,10 +21,11 @@ public class Section7 {
 		// memPageTest();
 //		 unsafeNewObj();
 //		pointCompressTest();
-		buildRecordsInHeap();
-		buildRecordsOutHeap();
+//		buildRecordsInHeap();
+//		buildRecordsOutHeap();
 //	    myRecordSort();
-//	    copyMemoryTest();
+//	    simpleCopyMemoryTest();
+		complexCopyMemoryTest();
 	}
 
 	public static void myRecordSort() throws Exception{
@@ -32,7 +33,26 @@ public class Section7 {
 		sortInHeap(records);
 	}
 	
-	private static void copyMemoryTest(){
+	private static void complexCopyMemoryTest() throws InstantiationException{
+		UnsafeUtil.printFieldOffset(MyRecord.class);
+		long ffo = UnsafeUtil.getFirstFieldOffset(MyRecord.class);
+		long elementSize =UnsafeUtil.sizeOf(MyRecord.class) - ffo;
+		int size = 1024;
+		long base = unsafe.allocateMemory(elementSize*size);
+		MyRecord mr = (MyRecord) unsafe.allocateInstance(MyRecord.class);
+		mr.col1=12;
+		mr.col2=11;
+		mr.id=20;
+		int index = 0;
+		long offset = base + index*elementSize;
+		unsafe.copyMemory(mr, ffo, null, offset, elementSize);
+		
+		MyRecord mr2 = (MyRecord) unsafe.allocateInstance(MyRecord.class);
+		unsafe.copyMemory(null, offset, mr2, ffo, elementSize);
+		System.out.println(mr2.col1);
+	}
+	
+	private static void simpleCopyMemoryTest(){
 	    long address = unsafe.allocateMemory(4L);
 	    unsafe.putInt(address, 100);
 	    long otherAddress = unsafe.allocateMemory(4L);

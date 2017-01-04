@@ -1,8 +1,9 @@
 package org.java.courses.leaderus.c7;
 
 import java.util.AbstractList;
+import java.util.RandomAccess;
 
-public class UnsafeArrayList<E>  extends AbstractList<E>{
+public class UnsafeArrayList<E>  extends AbstractList<E> implements RandomAccess{
 
 	private Object[] elementData;
 	
