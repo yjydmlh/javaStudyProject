@@ -10,7 +10,8 @@ target/*
 *.zip
 *.tar.gz
 *.rar
-*.project
+.project
 /.settings/*
 /.settings
 .settings
+.gitignore
