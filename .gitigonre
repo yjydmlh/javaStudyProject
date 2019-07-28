@@ -11,3 +11,6 @@ target/*
 *.tar.gz
 *.rar
 *.project
+/.settings/*
+/.settings
+.settings
