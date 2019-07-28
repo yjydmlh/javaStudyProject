@@ -5,7 +5,6 @@ import java.util.ArrayList;
 
 import org.java.courses.leaderus.c7.MyRecord;
 import org.java.courses.leaderus.util.UnsafeUtil;
-import org.osgi.framework.SynchronousBundleListener;
 
 import sun.misc.Unsafe;
 

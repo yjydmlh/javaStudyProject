@@ -37,18 +37,16 @@ public class Section7 {
 		UnsafeUtil.printFieldOffset(MyRecord.class);
 		long ffo = UnsafeUtil.getFirstFieldOffset(MyRecord.class);
 		long elementSize =UnsafeUtil.sizeOf(MyRecord.class) - ffo;
-		int size = 1024;
-		long base = unsafe.allocateMemory(elementSize*size);
+		long base = unsafe.allocateMemory(elementSize);
 		MyRecord mr = (MyRecord) unsafe.allocateInstance(MyRecord.class);
 		mr.col1=12;
 		mr.col2=11;
 		mr.id=20;
-		int index = 0;
-		long offset = base + index*elementSize;
-		unsafe.copyMemory(mr, ffo, null, offset, elementSize);
+		unsafe.copyMemory(mr, ffo, null, base, elementSize);
 		
 		MyRecord mr2 = (MyRecord) unsafe.allocateInstance(MyRecord.class);
-		unsafe.copyMemory(null, offset, mr2, ffo, elementSize);
+		long ffo2 = UnsafeUtil.getFirstFieldOffset(MyRecord.class);
+		unsafe.copyMemory(null, base, mr2, ffo2, elementSize);
 		System.out.println(mr2.col1);
 	}
 	
