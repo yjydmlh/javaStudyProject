@@ -13,24 +13,17 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
 
-    <java.version>1.8</java.version>
-    <source.version>1.8</source.version>
-    <target.version>1.8</target.version>
+    <java.version>17</java.version>
+    <source.version>17</source.version>
+    <target.version>17</target.version>
 
   </properties>
 
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
   <modules>
     <module>java-thread-nio</module>
     <module>java8</module>
     <module>java-courses</module>
+    <module>redis-study</module>
   </modules>
   <build>
     <plugins>
