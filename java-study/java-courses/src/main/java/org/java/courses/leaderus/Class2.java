@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
+import jdk.internal.vm.annotation.Contended;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -74,6 +75,7 @@ public class Class2 {
 }
 @Getter
 @Setter
+@Contended
 class Salary{
     private String name;
     private int bonus;
