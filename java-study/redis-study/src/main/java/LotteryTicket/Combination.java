@@ -10,6 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 单关
+ * 思路：先找出单场比赛的所有不重复的结果组合，包括内盘和外盘，再用内盘的所有组合去和外盘的组合进行匹配，组成一场比赛的所有投注组合
+ * 然后计算每个组合的投注额，取最小的中奖金额，然后计算出所有组合的利润，找出利润为正的所有组合
+ */
 public class Combination {
 
     private static final Map<Integer, Integer> keyMap = Maps.newHashMap();
@@ -28,7 +33,9 @@ public class Combination {
         List<SportLottery> inSportLotteryList = generateInSportLotteryList();
         List<SportLottery> outSportLotteryList = generateOutSportLotteryList();
 
+        //获取内盘所有结果组合
         List<List<SportLottery>> inCombinations = getCombinations(inSportLotteryList);
+        //获取外盘所有结果组合
         List<List<SportLottery>> outCombinations = getCombinations(outSportLotteryList);
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
@@ -41,6 +48,7 @@ public class Combination {
         for (List<SportLottery> combination : outCombinations) {
             System.out.println(combination);
         }
+        //将外盘和内盘所有组合匹配到一起，形成一场比赛的最终投注组合
         List<List<SportLottery>> finalCombinations = getCombinations(inCombinations, outCombinations);
         System.out.println("最终组合：");
         for (List<SportLottery> combination : finalCombinations) {
