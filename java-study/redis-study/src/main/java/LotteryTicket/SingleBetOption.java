@@ -6,10 +6,10 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * 投注方案
+ * 单关投注方案
  */
 @Data
-public class BetOption {
+public class SingleBetOption {
 
     /**
      * 投注组合

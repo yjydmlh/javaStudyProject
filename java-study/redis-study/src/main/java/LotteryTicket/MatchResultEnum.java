@@ -2,6 +2,9 @@ package LotteryTicket;
 
 import lombok.Getter;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Getter
 public enum MatchResultEnum {
 
@@ -15,6 +18,10 @@ public enum MatchResultEnum {
     MatchResultEnum(Integer code, String desc){
         this.code = code;
         this.desc = desc;
+    }
+
+    public static void main(String[] args) {
+        List<MatchResultEnum> list = Arrays.asList(MatchResultEnum.values());
     }
 
 }

@@ -15,18 +15,18 @@ import java.util.Map;
  * 思路：先找出单场比赛的所有不重复的结果组合，包括内盘和外盘，再用内盘的所有组合去和外盘的组合进行匹配，组成一场比赛的所有投注组合
  * 然后计算每个组合的投注额，取最小的中奖金额，然后计算出所有组合的利润，找出利润为正的所有组合
  */
-public class Combination {
+public class SingleCombinationBet {
 
-    private static final Map<Integer, Integer> keyMap = Maps.newHashMap();
+    private static final Map<Integer, Integer> resultFlagKeyMap = Maps.newHashMap();
 
     static {
-        keyMap.put(MatchResultEnum.WIN.getCode(), MatchResultEnum.DRAW.getCode() + MatchResultEnum.LOSE.getCode());
-        keyMap.put(MatchResultEnum.LOSE.getCode(), MatchResultEnum.WIN.getCode() + MatchResultEnum.DRAW.getCode());
-        keyMap.put(MatchResultEnum.DRAW.getCode(), MatchResultEnum.WIN.getCode() + MatchResultEnum.LOSE.getCode());
+        resultFlagKeyMap.put(MatchResultEnum.WIN.getCode(), MatchResultEnum.DRAW.getCode() + MatchResultEnum.LOSE.getCode());
+        resultFlagKeyMap.put(MatchResultEnum.LOSE.getCode(), MatchResultEnum.WIN.getCode() + MatchResultEnum.DRAW.getCode());
+        resultFlagKeyMap.put(MatchResultEnum.DRAW.getCode(), MatchResultEnum.WIN.getCode() + MatchResultEnum.LOSE.getCode());
 
-        keyMap.put(MatchResultEnum.DRAW.getCode() + MatchResultEnum.WIN.getCode(), MatchResultEnum.LOSE.getCode());
-        keyMap.put(MatchResultEnum.LOSE.getCode() + MatchResultEnum.WIN.getCode(), MatchResultEnum.DRAW.getCode());
-        keyMap.put(MatchResultEnum.DRAW.getCode() + MatchResultEnum.LOSE.getCode(), MatchResultEnum.WIN.getCode());
+        resultFlagKeyMap.put(MatchResultEnum.DRAW.getCode() + MatchResultEnum.WIN.getCode(), MatchResultEnum.LOSE.getCode());
+        resultFlagKeyMap.put(MatchResultEnum.LOSE.getCode() + MatchResultEnum.WIN.getCode(), MatchResultEnum.DRAW.getCode());
+        resultFlagKeyMap.put(MatchResultEnum.DRAW.getCode() + MatchResultEnum.LOSE.getCode(), MatchResultEnum.WIN.getCode());
     }
 
     public static void main(String[] args) {
@@ -57,43 +57,50 @@ public class Combination {
 
         BigDecimal totalBetAmount = BigDecimal.valueOf(10000);
         BigDecimal inSellRate = BigDecimal.valueOf(0.1);
-        List<BetOption> betOptionList = Lists.newArrayList();
+        List<SingleBetOption> singleBetOptionList = getBetOptionList(finalCombinations, totalBetAmount, inSellRate);
+
+        System.out.println("最佳投注方案：");
+        System.out.println(singleBetOptionList);
+        stopWatch.stop();
+        System.out.println("耗时：" + stopWatch.getTime());
+    }
+
+    private static List<SingleBetOption> getBetOptionList(List<List<SportLottery>> finalCombinations, BigDecimal totalBetAmount, BigDecimal inSellRate) {
+        List<SingleBetOption> singleBetOptionList = Lists.newArrayList();
         for (List<SportLottery> combination : finalCombinations) {
-            BetOption betOption = new BetOption();
-            betOption.setMinWinAmount(BigDecimal.ZERO);
+            SingleBetOption singleBetOption = new SingleBetOption();
+            singleBetOption.setMinWinAmount(BigDecimal.ZERO);
             BigDecimal inSellAmount = BigDecimal.ZERO;
             for (SportLottery sportLottery : combination) {
                 //当前结果投注额=总投注额/赔率
                 BigDecimal betAmount = totalBetAmount.divide(sportLottery.getOdds(), RoundingMode.UP).setScale(0, RoundingMode.UP);
                 sportLottery.setBetAmount(betAmount);
                 //实际成本
-                betOption.setRealCost(betOption.getRealCost().add(sportLottery.getBetAmount()));
+                singleBetOption.setRealCost(singleBetOption.getRealCost().add(sportLottery.getBetAmount()));
                 //中奖金额
                 sportLottery.setWinAmount(sportLottery.getBetAmount().multiply(sportLottery.getOdds()).setScale(0, RoundingMode.UP));
                 if (sportLottery.getInOrOut()) {
                     //内盘体彩出售金额
                     inSellAmount = inSellAmount.add(sportLottery.getBetAmount().multiply(inSellRate));
-                    betOption.setInBetAmount(betOption.getInBetAmount().add(sportLottery.getBetAmount()));
+                    singleBetOption.setInBetAmount(singleBetOption.getInBetAmount().add(sportLottery.getBetAmount()));
                 } else {
-                    betOption.setOutBetAmount(betOption.getOutBetAmount().add(sportLottery.getBetAmount()));
+                    singleBetOption.setOutBetAmount(singleBetOption.getOutBetAmount().add(sportLottery.getBetAmount()));
                 }
             }
             //最小中奖金额
-            betOption.setMinWinAmount(combination.stream().map(SportLottery::getWinAmount).min(BigDecimal::compareTo).get());
+            singleBetOption.setMinWinAmount(combination.stream().map(SportLottery::getWinAmount).min(BigDecimal::compareTo).get());
 
             //体彩出售金额
-            betOption.setInSellAmount(inSellAmount);
-            betOption.setProfit(betOption.getMinWinAmount().add(betOption.getInSellAmount()).subtract(betOption.getRealCost()));
-            betOption.setSportLotteryList(combination);
-            if (betOption.getProfit().compareTo(BigDecimal.ZERO) > 0) {
-                System.out.println(betOption);
-                betOptionList.add(betOption);
+            singleBetOption.setInSellAmount(inSellAmount);
+            singleBetOption.setProfit(singleBetOption.getMinWinAmount().add(singleBetOption.getInSellAmount()).subtract(singleBetOption.getRealCost()));
+            singleBetOption.setSportLotteryList(combination);
+            if (singleBetOption.getProfit().compareTo(BigDecimal.ZERO) > 0) {
+                singleBetOptionList.add(singleBetOption);
             }
         }
-
-        stopWatch.stop();
-        System.out.println("耗时：" + stopWatch.getTime());
+        return singleBetOptionList;
     }
+
 
     private static List<List<SportLottery>> getCombinations(List<List<SportLottery>> inCombinations, List<List<SportLottery>> outCombinations) {
 
@@ -124,7 +131,7 @@ public class Combination {
         System.out.println(inMap);
 
         inMap.forEach((key, value) -> {
-            Integer outKey = keyMap.get(key);
+            Integer outKey = resultFlagKeyMap.get(key);
             value.addAll(outMap.get(outKey));
             resultList.add(value);
         });
