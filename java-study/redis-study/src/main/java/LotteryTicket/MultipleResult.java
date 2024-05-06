@@ -21,6 +21,11 @@ public class MultipleResult {
     private String resultFlag;
 
     /**
+     * 比赛结果标识整型数字
+     */
+    private Integer resultFlagInt;
+
+    /**
      * 赔率
      */
     private BigDecimal odds;
@@ -46,7 +51,8 @@ public class MultipleResult {
     @Override
     public String toString() {
         return "{" +
-                "resultFlag='" + resultFlag +
+                "resultFlagInt="+resultFlagInt+
+                ", resultFlag=" + resultFlag +
                 ", 盘口类型=" + (inOrOut?"内盘":"外盘") +
                 ", 赔率=" + odds +
                 ", 投注额=" + betAmount +

@@ -47,16 +47,16 @@ public class MultipleBetOption {
     private BigDecimal profit = BigDecimal.ZERO;
 
     /**
-     * 赔率
+     * 总投注额
      */
-    private BigDecimal odds;
+    private BigDecimal totalBetAmount;
 
     @Override
     public String toString() {
         return "BetOption{" +
-                "实际成本=" + realCost +
+                "总投注额=" + totalBetAmount +
+                ", 实际成本=" + realCost +
                 ", 利润=" + profit +
-                ", 赔率=" + odds +
                 ", 最小中奖金额=" + minWinAmount +
                 ", 内盘投注额=" + inBetAmount +
                 ", 外盘投注额=" + outBetAmount +

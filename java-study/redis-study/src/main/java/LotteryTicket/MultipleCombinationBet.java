@@ -25,41 +25,43 @@ public class MultipleCombinationBet {
         List<MultipleResult> inResultList = combineAll(inMatchList, true);
         List<MultipleResult> outResultList = combineAll(outMatchList, false);
 
-        System.out.println("串关内盘结果：" + inResultList);
-        System.out.println("串关外盘结果：" + outResultList);
+//        System.out.println("串关内盘结果：" + inResultList);
+//        System.out.println("串关外盘结果：" + outResultList);
 
         System.out.println("\n\n");
 
         //获取结果组合
         List<List<MultipleResult>> inCombinationList = findCombinations(inResultList, 1, inResultList.size() - 1);
-        List<List<MultipleResult>> outCombinationList = findCombinations(outResultList, 1, outResultList.size() - 1);
+//        List<List<MultipleResult>> outCombinationList = findCombinations(outResultList, 1, outResultList.size() - 1);
 
-        buildResultFlagMap(inCombinationList, inResultList);
+//        buildResultFlagMap(inCombinationList, inResultList);
 
-        System.out.println("串关内盘组合：");
-        System.out.println(inCombinationList);
-        System.out.println("\n");
-        System.out.println("串关外盘组合：");
-        System.out.println(outCombinationList);
+//        System.out.println("串关内盘组合：");
+//        System.out.println(inCombinationList);
+//        System.out.println("\n");
+//        System.out.println("串关外盘组合：");
+//        System.out.println(outCombinationList);
+//
+//        System.out.println("结果标志位映射：");
+//        System.out.println(resultFlagMap);
 
-        System.out.println("结果标志位映射：");
-        System.out.println(resultFlagMap);
+        getFinalCombinationList(inCombinationList, outResultList);
 
-        List<List<MultipleResult>> finalCombinationList = getFinalCombinationList(inCombinationList, outCombinationList);
-
-        System.out.println("最终结果组合:");
-
-        for (List<MultipleResult> resultList : finalCombinationList) {
-            System.out.println(resultList);
-            System.out.println();
-        }
+//        System.out.println("最终结果组合:");
+//        for (List<MultipleResult> resultList : inCombinationList) {
+//            System.out.println(resultList);
+//            System.out.println();
+//        }
 
         BigDecimal totalBet = BigDecimal.valueOf(10000);
         BigDecimal inSellRate = BigDecimal.valueOf(0.1);
-        List<MultipleBetOption> betOptionList = getBetOptionList(finalCombinationList, totalBet, inSellRate);
+        List<MultipleBetOption> betOptionList = getBetOptionList(inCombinationList, totalBet, inSellRate);
 
         System.out.println("可用的投注方案：\n\n");
-        System.out.println(betOptionList.stream().map(MultipleBetOption::getProfit).sorted(BigDecimal::compareTo).collect(Collectors.toList()));
+        for (MultipleBetOption multipleBetOption : betOptionList) {
+            System.out.println(multipleBetOption);
+            System.out.println("\n\n");
+        }
     }
 
     private static List<List<MultipleResult>> findCombinations(List<MultipleResult> matchResultList, int minSize, int maxSize) {
@@ -88,6 +90,7 @@ public class MultipleCombinationBet {
         List<MultipleBetOption> betOptionList = Lists.newArrayList();
         for (List<MultipleResult> resultList : finalCombinationList) {
             MultipleBetOption multipleBetOption = new MultipleBetOption();
+            multipleBetOption.setTotalBetAmount(totalBet);
             multipleBetOption.setRealCost(BigDecimal.ZERO);
             BigDecimal inBetAmount = BigDecimal.ZERO;
             BigDecimal outBetAmount = BigDecimal.ZERO;
@@ -108,7 +111,7 @@ public class MultipleCombinationBet {
                     outBetAmount = outBetAmount.add(multipleResult.getBetAmount());
                 }
                 //中奖金额
-                multipleResult.setWinAmount(multipleResult.getBetAmount().multiply(odds).setScale(0, RoundingMode.UP));
+                multipleResult.setWinAmount(multipleResult.getBetAmount().multiply(odds).setScale(0, RoundingMode.DOWN));
             }
             //计算实际成本
             multipleBetOption.setRealCost(inBetAmount.add(outBetAmount));
@@ -131,55 +134,22 @@ public class MultipleCombinationBet {
         return betOptionList;
     }
 
-    private static List<List<MultipleResult>> getFinalCombinationList(List<List<MultipleResult>> inResultList, List<List<MultipleResult>> outResultList) {
-        List<List<MultipleResult>> resultList = Lists.newArrayList();
-
-        Map<String, List<MultipleResult>> inMap = Maps.newHashMap();
-
-        Map<String, List<MultipleResult>> outMap = Maps.newHashMap();
+    private static void getFinalCombinationList(List<List<MultipleResult>> inResultList, List<MultipleResult> outResultList) {
 
         for (List<MultipleResult> inResult : inResultList) {
-            String key = inResult.stream().map(MultipleResult::getResultFlag).collect(Collectors.joining("_"));
-            inMap.put(key, inResult);
-        }
 
-        for (List<MultipleResult> outResult : outResultList) {
-            String key = outResult.stream().map(MultipleResult::getResultFlag).collect(Collectors.joining("_"));
-            outMap.put(key, outResult);
-        }
-
-
-        inMap.forEach((key, value) -> {
-            String outKey = resultFlagMap.get(key);
-            value.addAll(outMap.get(outKey));
-            resultList.add(value);
-        });
-        return resultList;
-    }
-
-    private static void buildResultFlagMap(List<List<MultipleResult>> inCombinationResultList, List<MultipleResult> inResultList) {
-        for (List<MultipleResult> resultList : inCombinationResultList) {
-
-            List<String> resultFlagList = Lists.newArrayList();
-            for (MultipleResult multipleResult : resultList) {
-                resultFlagList.add(multipleResult.getResultFlag());
-            }
-
-            String key = resultList.stream().map(MultipleResult::getResultFlag).collect(Collectors.joining("_"));
-
-            StringBuilder resultFlag = new StringBuilder();
-            for (MultipleResult multipleResult : inResultList) {
-                if (!resultFlagList.contains(multipleResult.getResultFlag())) {
-                    resultFlag.append(multipleResult.getResultFlag()).append("_");
+            List<String> resultFlagList = inResult.stream().map(MultipleResult::getResultFlag).toList();
+            for (MultipleResult outResult : outResultList) {
+                if (!resultFlagList.contains(outResult.getResultFlag())) {
+                    inResult.add(outResult);
                 }
             }
-            resultFlagMap.put(key, resultFlag.substring(0, resultFlag.length() - 1));
         }
     }
-
 
     /**
      * 生成串关比赛结果
+     *
      * @param arrays
      * @param inOrOut
      * @return
@@ -212,9 +182,15 @@ public class MultipleCombinationBet {
             multipleResult.setResult(list);
             multipleResult.setInOrOut(inOrOut);
             StringBuilder resultFlag = new StringBuilder();
+            int resultFlagInt = 0;
+            BigDecimal odds = BigDecimal.ONE;
             for (MultipleSportLottery sportLottery : list) {
                 resultFlag.append(sportLottery.getMatchResult().getDesc()).append("_");
+                resultFlagInt = resultFlagInt + sportLottery.getMatchResult().getCode();
+                odds = odds.multiply(sportLottery.getOdds());
             }
+            multipleResult.setResultFlagInt(resultFlagInt);
+            multipleResult.setOdds(odds);
             multipleResult.setResultFlag(resultFlag.substring(0, resultFlag.length() - 1));
             multipleResultList.add(multipleResult);
         });
