@@ -13,9 +13,9 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
 
-    <java.version>17</java.version>
-    <source.version>17</source.version>
-    <target.version>17</target.version>
+    <java.version>21</java.version>
+    <source.version>21</source.version>
+    <target.version>21</target.version>
 
   </properties>
 
