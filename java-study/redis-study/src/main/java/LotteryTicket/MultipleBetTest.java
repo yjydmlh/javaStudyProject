@@ -5,6 +5,9 @@ import com.google.common.collect.Lists;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * 用于生成彩票数据
+ */
 public class MultipleBetTest {
 
     public static void main(String[] args) {

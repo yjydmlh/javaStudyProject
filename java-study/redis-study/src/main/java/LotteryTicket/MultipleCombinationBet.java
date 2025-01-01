@@ -6,8 +6,10 @@ import com.google.common.collect.Maps;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
-import java.util.stream.Collectors;
 
+/**
+ * 寻找最佳投注组合
+ */
 public class MultipleCombinationBet {
 
     private static final Map<String, String> resultFlagMap = Maps.newHashMap();
