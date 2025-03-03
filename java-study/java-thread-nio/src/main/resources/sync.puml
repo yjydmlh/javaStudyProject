@@ -1,0 +1,62 @@
+@startuml
+title Java 17锁升级流程（JDK 17+）
+
+start
+partition "对象初始化" {
+    :新建对象;
+    :对象头Mark Word存储哈希码等;
+    note right
+    【无锁状态】
+    Mark Word结构（64位）：
+    unused:25 | identity_hashcode:31 | unused:1 | age:4 | lock:01
+    **偏向锁标记已移除**
+    end note
+}
+
+partition "轻量级锁竞争" {
+    :线程访问同步块;
+    :在当前线程栈帧建立Lock Record;
+    :CAS复制对象头到Displaced Mark Word;
+    note right
+    【轻量级锁】
+    lock:00
+    对象指针指向线程栈中的Lock Record
+    end note
+
+    if (CAS成功?) then (是)
+        :进入同步块;
+    else (否)
+        :自适应自旋优化;
+        note right
+        【JDK17自旋策略】
+        - 基于CPU核心数的动态调整
+        - 考虑线程优先级和负载
+        end note
+        if (自旋成功?) then (是)
+            :获得锁;
+        else (否)
+            :膨胀为重量级锁;
+        endif
+    endif
+}
+
+partition "重量级锁（Monitor）" {
+    :对象关联Monitor对象;
+    note right
+    【重量级锁】
+    lock:10
+    ptr_to_heavyweight_monitor:62 bits
+    end note
+    :竞争线程进入EntryList队列;
+    :依赖操作系统mutex实现阻塞/唤醒;
+    note right
+    JDK17优化：
+    1. 改进的park/unpark机制
+    2. 更高效的条件变量实现
+    3. 减少上下文切换开销
+    end note
+}
+
+stop
+
+@enduml

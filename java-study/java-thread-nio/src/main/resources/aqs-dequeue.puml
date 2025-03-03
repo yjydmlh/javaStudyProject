@@ -1,0 +1,146 @@
+@startuml
+start
+partition "release(arg)" {
+    :尝试释放锁;
+    note right
+    // 对应代码：
+    if (tryRelease(arg)) {
+        Node h = head;
+        if (h != null && h.waitStatus != 0)
+            unparkSuccessor(h);
+    }
+    end note
+}
+
+partition "unparkSuccessor(node)" {
+    :获取当前节点状态;
+    note right
+    int ws = node.waitStatus;
+    if (ws < 0)
+        compareAndSetWaitStatus(node, ws, 0);
+    end note
+
+    :查找有效后继节点;
+    note right
+    Node s = node.next;
+    if (s == null || s.waitStatus > 0) {
+        s = null;
+        // 从尾向前扫描
+        for (Node t = tail; t != null && t != node; t = t.prev)
+            if (t.waitStatus <= 0)
+                s = t;
+    }
+    end note
+
+    if (s != null?) then (yes)
+        :唤醒线程;
+        note right
+        LockSupport.unpark(s.thread); // 关键唤醒操作
+        end note
+    else (no)
+        :无有效后继节点;
+    endif
+}
+
+partition 公平性差异 {
+    if (公平锁) then (yes)
+        :严格按队列顺序唤醒;
+        note right
+        // FairSync唤醒策略：
+        // 1. 只唤醒队列第一个有效节点
+        // 2. 新线程必须排队
+        end note
+    else (非公平锁)
+        :允许新线程插队竞争;
+        note right
+        // NonfairSync特性：
+        // 1. 新线程可直接CAS抢锁
+        // 2. 被唤醒线程需与新线程竞争
+        end note
+    endif
+}
+
+:被唤醒线程进入acquireQueued自旋;
+note right
+// 典型重试逻辑：
+for (;;) {
+    if (前驱是头节点 && tryAcquire(arg)) {
+        setHead(node);
+        return;
+    }
+    parkAndCheckInterrupt();
+}
+end note
+
+stop
+partition "出队流程公平性对比" {
+skinparam defaultTextAlignment center
+skinparam ActivityBackgroundColor #F9F9F9
+skinparam ActivityBorderColor #444444
+skinparam ActivityFontColor #333333
+
+title 出队流程公平性对比
+
+start
+group 公共出队流程
+    :释放锁资源;
+    note right
+    // tryRelease(arg)
+    if (释放成功) {
+        Node h = head;
+        if (h != null && h.waitStatus != 0)
+            unparkSuccessor(h);
+    }
+    end note
+
+    :查找有效后继节点;
+    note right
+    Node s = node.next;
+    if (s == null || s.waitStatus > 0) {
+        s = null;
+        for (Node t = tail; t != null && t != node; t = t.prev)
+            if (t.waitStatus <= 0) s = t;
+    }
+    end note
+end group
+
+split
+    partition 公平锁流程 #LightGreen {
+        :严格按队列顺序唤醒;
+        note right
+        // FairSync唤醒策略
+        if (s != null) {
+            LockSupport.unpark(s.thread);
+            // 仅唤醒队列第一个
+        }
+        end note
+    }
+split again
+    partition 非公平锁流程 #LightBlue {
+        :允许新线程插队竞争;
+        note right
+        // NonfairSync唤醒策略
+        LockSupport.unpark(s.thread);
+        // 新线程可通过lock()直接抢锁
+        end note
+    }
+end split
+
+group 后续处理
+    :被唤醒线程尝试获取锁;
+    note right
+    // acquireQueued()
+    for (;;) {
+        if (前驱是头节点 && tryAcquire(arg)) {
+            setHead(node);
+            break;
+        }
+        parkAndCheckInterrupt();
+    }
+    end note
+end group
+
+stop
+}
+
+@enduml

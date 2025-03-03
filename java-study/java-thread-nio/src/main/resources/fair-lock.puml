@@ -1,0 +1,38 @@
+@startuml
+start
+title 公平锁特性
+partition FairSync.tryAcquire {
+    if (hasQueuedPredecessors()?) then (yes)
+        :返回false\n(队列有等待者);
+    else (no)
+        if (state == 0?) then (yes)
+            :CAS设置state;
+            if (成功?) then (yes)
+                :setExclusiveOwnerThread;
+                :返回true;
+            else (no)
+                :返回false;
+            endif
+        else (no)
+            :检查重入逻辑;
+        endif
+    endif
+}
+
+partition hasQueuedPredecessors {
+    :h = head;
+    :t = tail;
+    if (h != t?) then (yes)
+        :s = h.next;
+        if (s == null || s.thread != currentThread?) then (yes)
+            :返回true;
+        else (no)
+            :返回false;
+        endif
+    else (no)
+        :返回false;
+    endif
+}
+
+stop
+@enduml

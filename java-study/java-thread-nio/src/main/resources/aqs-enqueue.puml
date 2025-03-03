@@ -1,0 +1,117 @@
+@startuml
+start
+partition "addWaiter(模式)" {
+    :创建新Node对象;
+    note right
+    // 对应代码：
+    Node node = new Node(Thread.currentThread(), mode);
+    end note
+
+    :读取当前tail指针 -> pred;
+    note right
+    Node pred = tail; // 这里可能报错的原始写法
+    // 修正为：
+    Node pred = getTail();
+    end note
+
+    if (pred != null?) then (yes)
+        :连接前驱节点;
+        note right
+        node.prev = pred;
+        end note
+
+        :CAS更新tail;
+        note right
+        if (compareAndSetTail(pred, node)) {
+        end note
+
+        if (CAS成功?) then (yes)
+            :建立后继链接;
+            note right
+            pred.next = node;
+            return node;
+            end note
+            stop
+        else (no)
+            :进入enq自旋;
+        endif
+    else (no)
+        :直接进入enq自旋;
+    endif
+}
+
+partition "enq(node)" {
+    repeat
+        :读取当前tail指针 -> t;
+        if (t == null?) then (yes)
+            :初始化头节点;
+            note right
+            if (compareAndSetHead(new Node())) {
+                tail = head;
+            }
+            end note
+        else (no)
+            :连接前驱节点;
+            note right
+            node.prev = t;
+            end note
+
+            :CAS更新tail;
+            note right
+            if (compareAndSetTail(t, node)) {
+                t.next = node;
+                return t;
+            }
+            end note
+        endif
+    repeat while (CAS失败?)
+}
+stop
+
+partition "公平锁和非公平锁()" {
+start
+if (锁类型?) then (非公平锁)
+    :直接尝试CAS抢锁;
+    note right
+    // NonfairSync.lock()
+    if (compareAndSetState(0, 1)) {
+        setExclusiveOwnerThread(current);
+    }
+    end note
+else (公平锁)
+    :检查队列是否有等待者;
+    note right
+    // FairSync.tryAcquire()
+    if (hasQueuedPredecessors()) return false;
+    end note
+endif
+
+if (获取成功?) then (yes)
+    :执行同步代码;
+    stop
+else (no)
+    :进入addWaiter流程;
+endif
+
+partition addWaiter {
+    :创建Node(EXCLUSIVE);
+    ->代码入队逻辑...;
+}
+
+:进入CLH队列自旋;
+note right
+// acquireQueued()
+for (;;) {
+    if (前驱是头节点 && tryAcquire()) {
+        setHead(node);
+        return;
+    }
+    park();
+}
+end note
+
+:被唤醒后重试;
+stop
+}
+
+@enduml
