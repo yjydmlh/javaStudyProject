@@ -80,6 +80,13 @@ public class GsonUtil {
         return builder.create();
     }
 
+    public static String prettyPrint(Object obj) {
+        Gson prettyGson = new GsonBuilder()
+                .setPrettyPrinting()
+                .create();
+        return prettyGson.toJson(obj);
+    }
+
     // === 示例使用方法 ===
     // （以下是测试用例，实际使用时需自行实现）
 
