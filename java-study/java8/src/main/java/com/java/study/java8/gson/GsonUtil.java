@@ -33,6 +33,7 @@ public class GsonUtil {
                 .registerTypeAdapter(long.class, new SafeNumberTypeAdapter())
                 .registerTypeAdapter(BigInteger.class, new BigIntegerTypeAdapter());
     }
+
     // 普通模式实例
     private static final Gson NORMAL_GSON = baseBuilder().create();
     // 美化模式实例（附加格式设置）
@@ -40,6 +41,7 @@ public class GsonUtil {
             .setPrettyPrinting()   // 关键区别配置
             .serializeNulls()      // 可选的额外配置
             .create();
+
     /**
      * 标准化输出（默认）
      * 使用示例：JsonUtils.toJson(user)
@@ -47,6 +49,7 @@ public class GsonUtil {
     public static String toJson(Object obj) {
         return NORMAL_GSON.toJson(obj);
     }
+
     /**
      * 美化输出
      * 使用示例：JsonUtils.pretty().toJson(user)
@@ -54,6 +57,7 @@ public class GsonUtil {
     public static Gson pretty() {
         return PRETTY_GSON;
     }
+
     // 反序列化统一使用普通实例（与格式化无关）
     public static <T> T fromJson(String json, Class<T> clazz) {
         return NORMAL_GSON.fromJson(json, clazz);
@@ -78,20 +82,24 @@ public class GsonUtil {
 
     /**
      * JSON字符串转List（自动推导元素类型）
+     *
      * @param elementType 集合元素类型（如User.class）
      */
     public static <T> List<T> jsonToList(String json, Class<T> elementType) {
-        Type listType = new TypeToken<List<T>>(){}.getType();
+        Type listType = new TypeToken<List<T>>() {
+        }.getType();
         return NORMAL_GSON.fromJson(json, listType);
     }
 
     /**
      * JSON字符串转Map（自动推导键值类型）
-     * @param keyType 键类型（如String.class）
+     *
+     * @param keyType   键类型（如String.class）
      * @param valueType 值类型（如User.class）
      */
     public static <K, V> Map<K, V> jsonToMap(String json, Class<K> keyType, Class<V> valueType) {
-        Type mapType = new TypeToken<Map<K, V>>(){}.getType();
+        Type mapType = new TypeToken<Map<K, V>>() {
+        }.getType();
         return NORMAL_GSON.fromJson(json, mapType);
     }
 
@@ -99,6 +107,7 @@ public class GsonUtil {
 
     /**
      * 自定义Gson配置（如排除null值、自定义序列化器）
+     *
      * @param config 自定义配置函数
      */
     public static Gson getCustomGson(Consumer<GsonBuilder> config) {
@@ -113,22 +122,27 @@ public class GsonUtil {
     }
 
     /* 原有序列化部分保持不变... */
+
     /**
      * 解析JSON字符串为JsonObject
+     *
      * @throws IllegalArgumentException 当非对象结构或解析失败时抛出
-     * 示例：JsonUtils.parseJsonObject("{\"name\":\"John\"}")
+     *                                  示例：JsonUtils.parseJsonObject("{\"name\":\"John\"}")
      */
     public static JsonObject parseJsonObject(String json) {
         return parseJsonElement(json).getAsJsonObject();
     }
+
     /**
      * 解析JSON字符串为JsonArray
+     *
      * @throws IllegalArgumentException 当非数组结构或解析失败时抛出
-     * 示例：JsonUtils.parseJsonArray("[1,2,3]")
+     *                                  示例：JsonUtils.parseJsonArray("[1,2,3]")
      */
     public static JsonArray parseJsonArray(String json) {
         return parseJsonElement(json).getAsJsonArray();
     }
+
     /**
      * 通用解析方法（底层实现）
      */
@@ -139,6 +153,7 @@ public class GsonUtil {
             throw new IllegalArgumentException("JSON解析失败: " + e.getMessage(), e);
         }
     }
+
     /**
      * 安全解析模式（不抛异常）
      * 示例：Optional<JsonObject> = JsonUtils.tryParseJsonObject(invalidJson)
@@ -150,6 +165,7 @@ public class GsonUtil {
             return Optional.empty();
         }
     }
+
     /**
      * 带类型转换的深度解析
      * 示例：List<User> users = JsonUtils.parseAsList(json, User.class)
@@ -164,6 +180,7 @@ public class GsonUtil {
     private static class SafeNumberTypeAdapter extends TypeAdapter<Number> {
         private static final long MAX_SAFE_INTEGER = (long) Math.pow(2, 53) - 1;
         private static final long MIN_SAFE_INTEGER = -MAX_SAFE_INTEGER;
+
         @Override
         public void write(JsonWriter out, Number value) throws IOException {
             if (value == null) {
@@ -179,6 +196,7 @@ public class GsonUtil {
                 out.value(numValue);
             }
         }
+
         @Override
         public Number read(JsonReader in) throws IOException {
             if (in.peek() == JsonToken.NULL) {
@@ -193,6 +211,7 @@ public class GsonUtil {
                 return (long) in.nextDouble(); // 处理原始数字类型
             }
         }
+
         private Long parseNumberString(String numStr) {
             try {
                 // 仅当长度不超过15位时转为Long（防止超大数精度丢失）
@@ -207,6 +226,7 @@ public class GsonUtil {
             }
         }
     }
+
     /**
      * 超大整数处理适配器（适用于BigInteger）
      */
@@ -224,6 +244,7 @@ public class GsonUtil {
                 out.value(value);
             }
         }
+
         @Override
         public BigInteger read(JsonReader in) throws IOException {
             if (in.peek() == JsonToken.NULL) {
@@ -263,6 +284,19 @@ public class GsonUtil {
         String json = GsonUtil.toJson(user);
         System.out.println(json);
         System.out.println(GsonUtil.prettyPrint(user)); // {"name":"张三","birthDate":"2024-03-13 00:16:32"}
+
+        // 对象解析
+        JsonObject obj = GsonUtil.parseJsonObject("{\"name\":\"Lucy\", \"age\":28}");
+        System.out.println(obj.get("name").getAsString()); // 输出: Lucy
+        // 数组解析
+        JsonArray arr = GsonUtil.parseJsonArray("[true, false, true]");
+        System.out.println(arr.size()); // 输出: 3
+        // 安全模式使用
+        GsonUtil.tryParseJsonObject("invalid_json")
+                .ifPresentOrElse(
+                        jsonObj -> System.out.println("解析成功"),
+                        () -> System.out.println("解析失败")
+                );
 
         // JSON转对象
         User user2 = GsonUtil.fromJson(json, User.class);
