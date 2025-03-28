@@ -39,7 +39,7 @@
 		<dependency>
 			<groupId>cn.hutool</groupId>
 			<artifactId>hutool-all</artifactId>
-			<version>5.8.22</version>
+			<version>5.8.26</version>
 		</dependency>
 		<dependency>
 			<groupId>de.unknownreality</groupId>
@@ -86,6 +86,12 @@
 			<groupId>com.typesafe.akka</groupId>
 			<artifactId>akka-actor_2.12</artifactId>
 			<version>2.5.7</version>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>5.8.2</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<dependencyManagement> 
