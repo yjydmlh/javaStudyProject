@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.core.type.TypeReference;
+import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +49,7 @@ public class JacksonTest {
         @JsonSubTypes.Type(value = Dog.class, name = "dog"), // 定义 Dog 的名称是 "dog"
         @JsonSubTypes.Type(value = Cat.class, name = "cat")  // 定义 Cat 的名称是 "cat"
 })
+@Data
 abstract class Animal {
     public String name;
 
@@ -57,6 +59,12 @@ abstract class Animal {
 
 // 子类 Dog
  @JsonTypeName("dog") // 也可以在这里定义名称，替代 @JsonSubTypes 中的指定
+ @Data
+ @JsonTypeInfo(
+         use = JsonTypeInfo.Id.NAME,        // 使用逻辑名称
+         include = JsonTypeInfo.As.PROPERTY, // 作为属性包含
+         property = "@type"                  // 属性名叫 @type
+ )
 class Dog extends Animal {
     public int boneCount;
 
@@ -69,6 +77,12 @@ class Dog extends Animal {
 
 // 子类 Cat
  @JsonTypeName("cat")
+ @Data
+ @JsonTypeInfo(
+         use = JsonTypeInfo.Id.NAME,        // 使用逻辑名称
+         include = JsonTypeInfo.As.PROPERTY, // 作为属性包含
+         property = "@type"                  // 属性名叫 @type
+ )
 class Cat extends Animal {
     public boolean likesCream;
 
