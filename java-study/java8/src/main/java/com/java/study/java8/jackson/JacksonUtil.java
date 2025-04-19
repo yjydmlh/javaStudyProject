@@ -129,7 +129,7 @@ public class JacksonUtil {
             JavaType mapType = buildMapType(Map.class, keyType, valueType);
             return MAPPER.readValue(json, mapType);
         } catch (IOException e) {
-            log.error("JSON转Map失败: {}", e.getMessage());
+            log.error("JSON转Map失败: {}", e.getMessage(),e);
             return Map.of();
         }
     }

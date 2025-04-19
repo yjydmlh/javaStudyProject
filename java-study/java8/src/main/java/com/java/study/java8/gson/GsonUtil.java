@@ -63,7 +63,7 @@ public class GsonUtil {
         try {
             return GSON.fromJson(json, clazz);
         } catch (Exception e) {
-            log.error("JSON反序列化失败: {}", e.getMessage());
+            log.error("JSON反序列化失败: {}", e.getMessage(),e);
             return null;
         }
     }
@@ -78,7 +78,7 @@ public class GsonUtil {
         try {
             return GSON.fromJson(json, typeOfT);
         } catch (Exception e) {
-            log.error("JSON反序列化失败: {}", e.getMessage());
+            log.error("JSON反序列化失败: {}", e.getMessage(),e);
             return null;
         }
     }
@@ -94,7 +94,7 @@ public class GsonUtil {
             Type listType = TypeToken.getParameterized(List.class, elementType).getType();
             return GSON.fromJson(json, listType);
         } catch (Exception e) {
-            log.error("JSON转List失败: {}", e.getMessage());
+            log.error("JSON转List失败: {}", e.getMessage(),e);
             return List.of();
         }
     }
@@ -110,7 +110,7 @@ public class GsonUtil {
             Type mapType = TypeToken.getParameterized(Map.class, keyType, valueType).getType();
             return GSON.fromJson(json, mapType);
         } catch (Exception e) {
-            log.error("JSON转Map失败: {}", e.getMessage());
+            log.error("JSON转Map失败: {}", e.getMessage(),e);
             return Map.of();
         }
     }
@@ -129,7 +129,7 @@ public class GsonUtil {
             }
             return element.getAsJsonObject();
         } catch (Exception e) {
-            log.error("JSON解析失败: {}", e.getMessage());
+            log.error("JSON解析失败: {}", e.getMessage(),e);
             return new JsonObject();
         }
     }
@@ -148,7 +148,7 @@ public class GsonUtil {
             }
             return element.getAsJsonArray();
         } catch (Exception e) {
-            log.error("JSON解析失败: {}", e.getMessage());
+            log.error("JSON解析失败: {}", e.getMessage(),e);
             return new JsonArray();
         }
     }
@@ -167,7 +167,7 @@ public class GsonUtil {
             }
             return Optional.of(element.getAsJsonObject());
         } catch (Exception e) {
-            log.warn("JSON解析失败: {}", e.getMessage());
+            log.warn("JSON解析失败: {}", e.getMessage(),e);
             return Optional.empty();
         }
     }
@@ -186,7 +186,7 @@ public class GsonUtil {
             }
             return Optional.of(element.getAsJsonArray());
         } catch (Exception e) {
-            log.warn("JSON解析失败: {}", e.getMessage());
+            log.warn("JSON解析失败: {}", e.getMessage(),e);
             return Optional.empty();
         }
     }
