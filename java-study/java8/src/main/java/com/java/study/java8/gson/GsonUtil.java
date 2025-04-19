@@ -21,17 +21,19 @@ import java.util.Optional;
  */
 @Slf4j
 public class GsonUtil {
-    
+
+    static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
     // 默认Gson实例
     private static final Gson GSON = new GsonBuilder()
-            .setDateFormat("yyyy-MM-dd HH:mm:ss")
+            .setDateFormat(DATE_FORMAT)
             .serializeNulls()
             .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeTypeAdapter())
             .create();
     
     // 美化输出Gson实例
     private static final Gson PRETTY_GSON = new GsonBuilder()
-            .setDateFormat("yyyy-MM-dd HH:mm:ss")
+            .setDateFormat(DATE_FORMAT)
             .serializeNulls()
             .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeTypeAdapter())
             .setPrettyPrinting()
@@ -196,7 +198,7 @@ public class GsonUtil {
 
     // LocalDateTime类型适配器
     private static class LocalDateTimeTypeAdapter extends TypeAdapter<LocalDateTime> {
-        private final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+        private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
 
         @Override
         public void write(JsonWriter out, LocalDateTime value) throws IOException {
