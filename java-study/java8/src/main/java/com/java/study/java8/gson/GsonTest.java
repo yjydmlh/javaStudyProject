@@ -1,5 +1,7 @@
 package com.java.study.java8.gson;
 
+import java.time.LocalDateTime;
+
 public class GsonTest {
 
     public static void main(String[] args) {
@@ -11,6 +13,9 @@ public class GsonTest {
         Long result2 = GsonUtil.fromJson(Long.MAX_VALUE+"", Long.class);
         System.out.println(result2);
         System.out.println(GsonUtil.toJson(Long.MAX_VALUE));
+
+        LocalDateTime now = LocalDateTime.now();
+        System.out.println(GsonUtil.toJson(now));
     }
 
 }

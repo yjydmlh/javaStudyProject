@@ -2,9 +2,15 @@ package com.java.study.java8.gson;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+import com.google.gson.stream.JsonWriter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,12 +26,14 @@ public class GsonUtil {
     private static final Gson GSON = new GsonBuilder()
             .setDateFormat("yyyy-MM-dd HH:mm:ss")
             .serializeNulls()
+            .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeTypeAdapter())
             .create();
     
     // 美化输出Gson实例
     private static final Gson PRETTY_GSON = new GsonBuilder()
             .setDateFormat("yyyy-MM-dd HH:mm:ss")
             .serializeNulls()
+            .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeTypeAdapter())
             .setPrettyPrinting()
             .create();
     
@@ -184,5 +192,28 @@ public class GsonUtil {
     // 私有构造器防止实例化
     private GsonUtil() {
         throw new UnsupportedOperationException("工具类不可实例化");
+    }
+
+    // LocalDateTime类型适配器
+    private static class LocalDateTimeTypeAdapter extends TypeAdapter<LocalDateTime> {
+        private final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+
+        @Override
+        public void write(JsonWriter out, LocalDateTime value) throws IOException {
+            if (value == null) {
+                out.nullValue();
+            } else {
+                out.value(formatter.format(value));
+            }
+        }
+
+        @Override
+        public LocalDateTime read(JsonReader in) throws IOException {
+            if (in.peek() == JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+            return LocalDateTime.parse(in.nextString(), formatter);
+        }
     }
 }
