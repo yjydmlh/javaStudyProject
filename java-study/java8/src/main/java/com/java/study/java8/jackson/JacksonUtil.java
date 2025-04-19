@@ -114,6 +114,26 @@ public class JacksonUtil {
         }
     }
 
+    /**
+     * JSON字符串转Map
+     * @param json JSON字符串
+     * @param keyType Map键类型
+     * @param valueType Map值类型
+     * @return 转换后的Map（失败返回空Map）
+     */
+    public static <K, V> Map<K, V> parseMap(String json, Class<K> keyType, Class<V> valueType) {
+        if (isEmpty(json) || keyType == null || valueType == null) {
+            return Map.of();
+        }
+        try {
+            JavaType mapType = buildMapType(Map.class, keyType, valueType);
+            return MAPPER.readValue(json, mapType);
+        } catch (IOException e) {
+            log.error("JSON转Map失败: {}", e.getMessage());
+            return Map.of();
+        }
+    }
+
     public static JavaType buildCollectionType(Class<? extends Collection> collectionClass, Class<?> elementClass) {
         return MAPPER.getTypeFactory().constructCollectionType(collectionClass, elementClass);
     }
