@@ -1,5 +1,6 @@
 package com.java.study.java8.jackson;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
@@ -40,8 +41,7 @@ public class JacksonUtil {
 
         MAPPER.registerModule(javaTimeModule)
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .setDateFormat(new SimpleDateFormat(dateTimePattern))
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                .setDateFormat(new SimpleDateFormat(dateTimePattern));
         // 初始化美化输出的Writer
         PRETTY_WRITER = MAPPER.writerWithDefaultPrettyPrinter();
     }
