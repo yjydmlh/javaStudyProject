@@ -1,434 +1,291 @@
 package com.java.study.java8.diyQueue;
 
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
 
 /**
- * 修复的无锁MPMC队列使用示例和性能测试
+ * ModernHighPerformanceMPMCQueue使用示例
+ * 展示各种使用场景和最佳实践
  */
 public class QueueUsageExample {
 
-    public static void main(String[] args) throws InterruptedException {
-        System.out.println("开始测试无锁MPMC队列...\n");
+    public static void main(String[] args) throws Exception {
+        System.out.println("=== ModernHighPerformanceMPMCQueue 使用示例 ===\n");
 
-        // 基本使用示例
+        // 1. 基本使用
         basicUsageExample();
 
-        Thread.sleep(1000);
+        // 2. 多线程生产者消费者模式
+        producerConsumerExample();
 
-        // 性能测试
-        performanceTest();
+        // 3. 批处理示例
+        batchOperationsExample();
 
-        Thread.sleep(1000);
+        // 4. 阻塞操作示例
+        blockingOperationsExample();
 
-        // 动态负载测试
-        dynamicLoadTest();
-
-        Thread.sleep(1000);
-
-        // 对比测试
-        comparisonTest();
+        // 5. 队列监控示例
+        monitoringExample();
     }
 
     /**
-     * 基本使用示例
+     * 1. 基本使用示例
      */
-    private static void basicUsageExample() throws InterruptedException {
-        System.out.println("=== 基本使用示例 ===");
+    private static void basicUsageExample() {
+        System.out.println("=== 1. 基本使用示例 ===");
 
-        LockFreeMPMCQueue<String> queue = new LockFreeMPMCQueue<>(100);
-        ExecutorService executor = Executors.newFixedThreadPool(4);
-        CountDownLatch latch = new CountDownLatch(20); // 2个生产者各10条 + 2个消费者各接收
+        // 创建队列 - 三种方式
 
-        // 启动2个生产者
-        for (int i = 0; i < 2; i++) {
-            final int producerId = i;
-            executor.submit(() -> {
-                queue.registerProducer();
-                try {
-                    for (int j = 0; j < 10; j++) {
-                        String message = "Producer-" + producerId + "-Message-" + j;
-                        if (queue.offer(message)) {
-                            System.out.println("✓ 生产: " + message);
-                            latch.countDown();
-                        }
-                        Thread.sleep(50);
-                    }
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } finally {
-                    queue.unregisterProducer();
-                }
-            });
-        }
+        // 方式1: 使用默认构造函数
+        ModernHighPerformanceMPMCQueue<String> queue1 = new ModernHighPerformanceMPMCQueue<>();
 
-        // 启动2个消费者，等待一段时间后开始消费
-        Thread.sleep(100);
-        for (int i = 0; i < 2; i++) {
-            final int consumerId = i;
-            executor.submit(() -> {
-                queue.registerConsumer();
-                try {
-                    while (latch.getCount() > 0) {
-                        String message = queue.poll();
-                        if (message != null) {
-                            System.out.println("✓ 消费者-" + consumerId + " 消费: " + message);
-                        } else {
-                            Thread.sleep(10);
-                        }
-                    }
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } finally {
-                    queue.unregisterConsumer();
-                }
-            });
-        }
+        // 方式2: 指定容量
+        ModernHighPerformanceMPMCQueue<String> queue2 = new ModernHighPerformanceMPMCQueue<>(1024);
 
-        // 等待完成
-        latch.await(10, TimeUnit.SECONDS);
-        executor.shutdown();
-        executor.awaitTermination(5, TimeUnit.SECONDS);
+        // 方式3: 使用构建器
+        ModernHighPerformanceMPMCQueue<String> queue = QueueBuilder.<String>newBuilder()
+                .capacity(1024)
+                .build();
 
-        System.out.println("基本测试完成: " + queue.getStats());
+        // 基本操作
+        System.out.println("基本入队出队操作:");
+
+        // 入队
+        boolean success = queue.offer("Hello");
+        System.out.println("入队 'Hello': " + success);
+
+        queue.offer("World");
+        queue.offer("Java");
+
+        System.out.println("当前队列大小: " + queue.size());
+
+        // 出队
+        String item1 = queue.poll();
+        String item2 = queue.poll();
+        String item3 = queue.poll();
+        String item4 = queue.poll(); // 应该返回null
+
+        System.out.println("出队结果: " + item1 + ", " + item2 + ", " + item3 + ", " + item4);
+        System.out.println("队列是否为空: " + queue.isEmpty());
         System.out.println();
     }
 
     /**
-     * 性能测试 - 修复版本
+     * 2. 多线程生产者消费者示例
      */
-    private static void performanceTest() throws InterruptedException {
-        System.out.println("=== 性能测试 ===");
+    private static void producerConsumerExample() throws InterruptedException {
+        System.out.println("=== 2. 多线程生产者消费者示例 ===");
 
-        final int PRODUCERS = 2;
-        final int CONSUMERS = 2;
-        final int MESSAGES_PER_PRODUCER = 50000;
-        final int TOTAL_MESSAGES = PRODUCERS * MESSAGES_PER_PRODUCER;
+        ModernHighPerformanceMPMCQueue<Integer> queue = QueueFactory.createMediumQueue();
+        ExecutorService executor = Executors.newFixedThreadPool(6);
+        CountDownLatch latch = new CountDownLatch(6);
+        AtomicInteger totalProduced = new AtomicInteger(0);
+        AtomicInteger totalConsumed = new AtomicInteger(0);
 
-        LockFreeMPMCQueue<Integer> queue = new LockFreeMPMCQueue<>(TOTAL_MESSAGES / 2);
-        ExecutorService executor = Executors.newFixedThreadPool(PRODUCERS + CONSUMERS);
-
-        CountDownLatch startLatch = new CountDownLatch(1);
-        CountDownLatch producerLatch = new CountDownLatch(PRODUCERS);
-        AtomicLong totalConsumed = new AtomicLong(0);
-        AtomicBoolean testComplete = new AtomicBoolean(false);
-
-        long startTime = System.nanoTime();
-
-        // 启动生产者
-        for (int i = 0; i < PRODUCERS; i++) {
+        // 启动3个生产者
+        for (int i = 0; i < 3; i++) {
             final int producerId = i;
             executor.submit(() -> {
-                queue.registerProducer();
                 try {
-                    startLatch.await();
-                    Random random = new Random(producerId);
-                    int produced = 0;
+                    // 注册生产者（可选，但建议）
+                    queue.registerProducer();
 
-                    for (int j = 0; j < MESSAGES_PER_PRODUCER; j++) {
-                        while (!queue.offer(random.nextInt()) && !testComplete.get()) {
-                            LockSupport.parkNanos(100);
+                    for (int j = 0; j < 100; j++) {
+                        int value = producerId * 1000 + j;
+                        while (!queue.offer(value)) {
+                            Thread.onSpinWait(); // 自旋等待
                         }
-                        produced++;
+                        totalProduced.incrementAndGet();
 
-                        // 每生产1000个打印一次进度
-                        if (produced % 10000 == 0) {
-                            System.out.printf("生产者-%d 已生产 %d/%d\n",
-                                    producerId, produced, MESSAGES_PER_PRODUCER);
+                        if (j % 50 == 0) {
+                            System.out.printf("生产者-%d 已生产 %d 个元素\n", producerId, j + 1);
                         }
                     }
-                    System.out.printf("生产者-%d 完成，共生产 %d 条消息\n", producerId, produced);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+
+                    System.out.printf("生产者-%d 完成\n", producerId);
                 } finally {
                     queue.unregisterProducer();
-                    producerLatch.countDown();
+                    latch.countDown();
                 }
             });
         }
 
-        // 启动消费者
-        for (int i = 0; i < CONSUMERS; i++) {
+        // 启动3个消费者
+        for (int i = 0; i < 3; i++) {
             final int consumerId = i;
             executor.submit(() -> {
-                queue.registerConsumer();
                 try {
-                    startLatch.await();
-                    int consumed = 0;
+                    // 注册消费者（可选，但建议）
+                    queue.registerConsumer();
 
-                    while (true) {
+                    int consumed = 0;
+                    while (consumed < 100) {
                         Integer value = queue.poll();
                         if (value != null) {
                             consumed++;
                             totalConsumed.incrementAndGet();
 
-                            // 每消费1000个打印一次进度
-                            if (consumed % 10000 == 0) {
-                                System.out.printf("消费者-%d 已消费 %d，总消费 %d/%d\n",
-                                        consumerId, consumed, totalConsumed.get(), TOTAL_MESSAGES);
+                            if (consumed % 50 == 0) {
+                                System.out.printf("消费者-%d 已消费 %d 个元素\n", consumerId, consumed);
                             }
                         } else {
-                            // 检查是否所有生产者都完成了
-                            if (producerLatch.getCount() == 0 && queue.isEmpty()) {
-                                break;
-                            }
+                            // 短暂等待
                             LockSupport.parkNanos(1000);
                         }
-
-                        // 如果已经消费了足够的消息，退出
-                        if (totalConsumed.get() >= TOTAL_MESSAGES) {
-                            break;
-                        }
                     }
-                    System.out.printf("消费者-%d 完成，共消费 %d 条消息\n", consumerId, consumed);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+
+                    System.out.printf("消费者-%d 完成\n", consumerId);
                 } finally {
                     queue.unregisterConsumer();
+                    latch.countDown();
                 }
             });
         }
 
-        // 开始测试
-        System.out.println("开始性能测试...");
-        startLatch.countDown();
-
-        // 等待所有生产者完成
-        producerLatch.await(30, TimeUnit.SECONDS);
-
-        // 等待消费者完成或超时
-        long deadline = System.currentTimeMillis() + 30000; // 30秒超时
-        while (totalConsumed.get() < TOTAL_MESSAGES && System.currentTimeMillis() < deadline) {
-            Thread.sleep(100);
-        }
-
-        testComplete.set(true);
-        long endTime = System.nanoTime();
-
+        // 等待所有线程完成
+        latch.await(10, TimeUnit.SECONDS);
         executor.shutdown();
-        executor.awaitTermination(5, TimeUnit.SECONDS);
 
-        long totalTime = endTime - startTime;
-        long finalConsumed = totalConsumed.get();
-        double seconds = totalTime / 1_000_000_000.0;
-        double throughput = (TOTAL_MESSAGES + finalConsumed) / seconds;
-
-        System.out.printf("\n性能测试结果:\n");
-        System.out.printf("  生产者数量: %d\n", PRODUCERS);
-        System.out.printf("  消费者数量: %d\n", CONSUMERS);
-        System.out.printf("  目标消息数: %d\n", TOTAL_MESSAGES);
-        System.out.printf("  实际消费数: %d\n", finalConsumed);
-        System.out.printf("  总耗时: %.2f 秒\n", seconds);
-        System.out.printf("  吞吐量: %.0f 操作/秒\n", throughput);
-        System.out.printf("  队列统计: %s\n", queue.getStats());
-        System.out.printf("  竞争度: %.2f\n", queue.getContentionLevel());
+        System.out.printf("总计: 生产 %d, 消费 %d\n", totalProduced.get(), totalConsumed.get());
+        System.out.println("队列统计: " + queue.getStats());
         System.out.println();
     }
 
     /**
-     * 动态负载测试
+     * 3. 批处理操作示例
      */
-    private static void dynamicLoadTest() throws InterruptedException {
-        System.out.println("=== 动态负载测试 ===");
+    private static void batchOperationsExample() {
+        System.out.println("=== 3. 批处理操作示例 ===");
 
-        LockFreeMPMCQueue<String> queue = new LockFreeMPMCQueue<>(1000);
-        ExecutorService executor = Executors.newFixedThreadPool(10);
-        AtomicBoolean running = new AtomicBoolean(true);
+        ModernHighPerformanceMPMCQueue<String> queue = QueueFactory.createSmallQueue();
 
-        // 监控线程
-        Future<?> monitor = executor.submit(() -> {
+        // 批量入队
+        String[] items = {"batch1", "batch2", "batch3", "batch4", "batch5"};
+        int offered = queue.offerBatch(items, 0, items.length);
+        System.out.printf("批量入队: 尝试 %d 个，成功 %d 个\n", items.length, offered);
+
+        // 批量出队
+        String[] result = new String[3];
+        int polled = queue.pollBatch(result, 0, 3);
+        System.out.printf("批量出队: 尝试 %d 个，成功 %d 个\n", 3, polled);
+        System.out.print("出队结果: ");
+        for (int i = 0; i < polled; i++) {
+            System.out.print(result[i] + " ");
+        }
+        System.out.println();
+
+        System.out.println("剩余队列大小: " + queue.size());
+        System.out.println();
+    }
+
+    /**
+     * 4. 阻塞操作示例
+     */
+    private static void blockingOperationsExample() throws Exception {
+        System.out.println("=== 4. 阻塞操作示例 ===");
+
+        ModernHighPerformanceMPMCQueue<String> queue = QueueFactory.createSmallQueue();
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+
+        // 阻塞式生产者
+        Future<?> producer = executor.submit(() -> {
             try {
-                while (running.get()) {
-                    System.out.println("监控: " + queue.getStats());
-                    Thread.sleep(1000);
-                }
+                queue.put("blocking-item-1");
+                System.out.println("生产者: 成功put第1个元素");
+
+                Thread.sleep(1000); // 模拟处理时间
+
+                queue.put("blocking-item-2");
+                System.out.println("生产者: 成功put第2个元素");
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
         });
 
-        // 阶段1: 轻负载 - 1个生产者，1个消费者
-        System.out.println("阶段1: 轻负载测试 (1生产者, 1消费者)");
-        runLoadPhase(queue, executor, 1, 1, 1000, 5000);
+        // 阻塞式消费者
+        Future<?> consumer = executor.submit(() -> {
+            try {
+                String item1 = queue.take();
+                System.out.println("消费者: 获取到 " + item1);
 
-        Thread.sleep(2000);
+                String item2 = queue.take();
+                System.out.println("消费者: 获取到 " + item2);
 
-        // 阶段2: 中等负载 - 2个生产者，2个消费者
-        System.out.println("阶段2: 中等负载测试 (2生产者, 2消费者)");
-        runLoadPhase(queue, executor, 2, 2, 2000, 10000);
+                // 测试超时方法
+                String item3 = queue.poll(500_000_000L); // 500ms超时
+                System.out.println("消费者: 超时获取 " + (item3 != null ? item3 : "null"));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
 
-        Thread.sleep(2000);
+        // 等待完成
+        producer.get(5, TimeUnit.SECONDS);
+        consumer.get(5, TimeUnit.SECONDS);
 
-        // 阶段3: 高负载 - 4个生产者，3个消费者
-        System.out.println("阶段3: 高负载测试 (4生产者, 3消费者)");
-        runLoadPhase(queue, executor, 4, 3, 3000, 15000);
-
-        running.set(false);
-        monitor.cancel(true);
         executor.shutdown();
-        executor.awaitTermination(5, TimeUnit.SECONDS);
-
-        System.out.println("动态负载测试完成");
         System.out.println();
     }
 
     /**
-     * 运行负载测试阶段
+     * 5. 队列监控示例
      */
-    private static void runLoadPhase(LockFreeMPMCQueue<String> queue, ExecutorService executor,
-                                     int producers, int consumers, int messagesPerProducer, int duration)
-            throws InterruptedException {
+    private static void monitoringExample() throws InterruptedException {
+        System.out.println("=== 5. 队列监控示例 ===");
 
-        CountDownLatch latch = new CountDownLatch(producers + consumers);
-        AtomicBoolean phaseRunning = new AtomicBoolean(true);
+        ModernHighPerformanceMPMCQueue<Integer> queue = QueueFactory.createMediumQueue();
+        QueueMonitor monitor = new QueueMonitor(queue);
 
-        // 启动生产者
-        for (int i = 0; i < producers; i++) {
-            final int id = i;
-            executor.submit(() -> {
-                queue.registerProducer();
-                try {
-                    Random random = new Random();
-                    int count = 0;
-                    while (phaseRunning.get() && count < messagesPerProducer) {
-                        if (queue.offer("P" + id + "-" + count)) {
-                            count++;
-                        }
-                        Thread.sleep(random.nextInt(10));
+        // 模拟一些活动
+        ExecutorService executor = Executors.newFixedThreadPool(4);
+
+        // 生产者
+        executor.submit(() -> {
+            queue.registerProducer();
+            try {
+                for (int i = 0; i < 1000; i++) {
+                    queue.offer(i);
+                    if (i % 100 == 0) {
+                        Thread.sleep(10);
                     }
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } finally {
-                    queue.unregisterProducer();
-                    latch.countDown();
                 }
-            });
-        }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } finally {
+                queue.unregisterProducer();
+            }
+        });
 
-        // 启动消费者
-        for (int i = 0; i < consumers; i++) {
-            final int id = i;
-            executor.submit(() -> {
-                queue.registerConsumer();
-                try {
-                    Random random = new Random();
-                    while (phaseRunning.get()) {
-                        String msg = queue.poll();
-                        if (msg == null) {
-                            Thread.sleep(1);
-                        } else {
-                            Thread.sleep(random.nextInt(5));
-                        }
+        // 消费者
+        executor.submit(() -> {
+            queue.registerConsumer();
+            try {
+                for (int i = 0; i < 1000; i++) {
+                    while (queue.poll() == null) {
+                        Thread.sleep(1);
                     }
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } finally {
-                    queue.unregisterConsumer();
-                    latch.countDown();
                 }
-            });
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } finally {
+                queue.unregisterConsumer();
+            }
+        });
+
+        // 监控线程
+        for (int i = 0; i < 5; i++) {
+            Thread.sleep(500);
+            System.out.println("监控报告: " + monitor.getRealTimeStats());
+            System.out.println("健康状态: " + monitor.getHealthReport());
         }
-
-        // 运行指定时间
-        Thread.sleep(duration);
-        phaseRunning.set(false);
-        latch.await(5, TimeUnit.SECONDS);
-    }
-
-    /**
-     * 对比测试
-     */
-    private static void comparisonTest() throws InterruptedException {
-        System.out.println("=== 与标准队列的性能对比 ===");
-
-        final int ITERATIONS = 100000;
-        final int THREADS = 4;
-
-        // 测试我们的无锁队列
-        long lockFreeTime = benchmarkQueue("无锁队列", () -> new LockFreeMPMCQueue<>(), ITERATIONS, THREADS);
-
-        // 测试ConcurrentLinkedQueue
-        long clqTime = benchmarkQueue("ConcurrentLinkedQueue", () -> new ConcurrentLinkedQueue<>(), ITERATIONS, THREADS);
-
-        // 测试LinkedBlockingQueue
-        long lbqTime = benchmarkQueue("LinkedBlockingQueue", () -> new LinkedBlockingQueue<>(), ITERATIONS, THREADS);
-
-        System.out.println("\n对比结果:");
-        System.out.printf("无锁队列: %d ms (基准)\n", lockFreeTime);
-        System.out.printf("ConcurrentLinkedQueue: %d ms (%.2fx)\n", clqTime, (double)clqTime / lockFreeTime);
-        System.out.printf("LinkedBlockingQueue: %d ms (%.2fx)\n", lbqTime, (double)lbqTime / lockFreeTime);
-    }
-
-    @FunctionalInterface
-    interface QueueSupplier {
-        Object get();
-    }
-
-    private static long benchmarkQueue(String name, QueueSupplier supplier, int iterations, int threads)
-            throws InterruptedException {
-        Object queue = supplier.get();
-        ExecutorService executor = Executors.newFixedThreadPool(threads);
-        CountDownLatch latch = new CountDownLatch(threads);
-        AtomicLong operations = new AtomicLong(0);
-
-        long startTime = System.currentTimeMillis();
-
-        for (int i = 0; i < threads; i++) {
-            final int threadId = i;
-            executor.submit(() -> {
-                try {
-                    Random random = new Random(threadId);
-                    for (int j = 0; j < iterations / threads; j++) {
-                        if (threadId % 2 == 0) {
-                            // 生产者
-                            offerToQueue(queue, random.nextInt());
-                            operations.incrementAndGet();
-                        } else {
-                            // 消费者
-                            pollFromQueue(queue);
-                            operations.incrementAndGet();
-                        }
-                    }
-                } finally {
-                    latch.countDown();
-                }
-            });
-        }
-
-        latch.await(30, TimeUnit.SECONDS);
-        long endTime = System.currentTimeMillis();
 
         executor.shutdown();
         executor.awaitTermination(5, TimeUnit.SECONDS);
 
-        long duration = endTime - startTime;
-        System.out.printf("%s: %d ms, %d 操作\n", name, duration, operations.get());
-        return duration;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static void offerToQueue(Object queue, Integer value) {
-        if (queue instanceof LockFreeMPMCQueue) {
-            ((LockFreeMPMCQueue<Integer>) queue).offer(value);
-        } else if (queue instanceof ConcurrentLinkedQueue) {
-            ((ConcurrentLinkedQueue<Integer>) queue).offer(value);
-        } else if (queue instanceof LinkedBlockingQueue) {
-            ((LinkedBlockingQueue<Integer>) queue).offer(value);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private static Integer pollFromQueue(Object queue) {
-        if (queue instanceof LockFreeMPMCQueue) {
-            return ((LockFreeMPMCQueue<Integer>) queue).poll();
-        } else if (queue instanceof ConcurrentLinkedQueue) {
-            return ((ConcurrentLinkedQueue<Integer>) queue).poll();
-        } else if (queue instanceof LinkedBlockingQueue) {
-            return ((LinkedBlockingQueue<Integer>) queue).poll();
-        }
-        return null;
+        // 最终分析
+        System.out.println("\n=== 最终性能分析 ===");
+        QueueAnalyzer.analyzePerformance(queue);
+        System.out.println(QueueAnalyzer.getPerformanceAdvice(queue));
     }
 }
