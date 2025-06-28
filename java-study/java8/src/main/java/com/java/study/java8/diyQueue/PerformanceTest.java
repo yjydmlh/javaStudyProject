@@ -93,7 +93,7 @@ public class PerformanceTest {
     private static void singleThreadBenchmark() {
         System.out.println("=== 1. 单线程性能基准测试 ===");
 
-        final int iterations = 10_000_000; // 1000万次操作
+        final int iterations = 100_000_000; // 1000万次操作
         ModernHighPerformanceMPMCQueue<Integer> queue = new ModernHighPerformanceMPMCQueue<>(iterations);
 
         // 测试入队性能
@@ -129,7 +129,7 @@ public class PerformanceTest {
         System.out.println("=== 2. 多线程吞吐量测试 ===");
 
         int[] threadConfigs = {2, 4, 8, 16};
-        final int messagesPerThread = 1_000_000;
+        final int messagesPerThread = 10_000_000;
 
         for (int totalThreads : threadConfigs) {
             int producers = totalThreads / 2;
@@ -246,7 +246,7 @@ public class PerformanceTest {
     private static void latencyDistributionTest() {
         System.out.println("=== 3. 延迟分布测试 ===");
 
-        final int iterations = 1_000_000;
+        final int iterations = 100_000_000;
         ModernHighPerformanceMPMCQueue<Integer> queue = new ModernHighPerformanceMPMCQueue<>(1024);
         long[] latencies = new long[iterations];
 
