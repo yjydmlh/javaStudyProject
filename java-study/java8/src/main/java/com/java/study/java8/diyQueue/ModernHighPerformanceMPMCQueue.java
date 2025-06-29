@@ -107,6 +107,7 @@ public class ModernHighPerformanceMPMCQueue<T> {
 
     /**
      * 构造函数
+     *
      * @param capacity 队列容量，必须是2的幂（会自动调整）
      */
     @SuppressWarnings("unchecked")
@@ -161,6 +162,7 @@ public class ModernHighPerformanceMPMCQueue<T> {
 
     /**
      * 非阻塞入队操作
+     *
      * @param item 要入队的元素，不能为null
      * @return true如果成功入队，false如果队列已满
      */
@@ -210,7 +212,7 @@ public class ModernHighPerformanceMPMCQueue<T> {
         }
 
         // 获取目标元素
-        element = buffer[(int)(currentProducerSequence & mask)];
+        element = buffer[(int) (currentProducerSequence & mask)];
 
         // 等待序列号匹配
         final long expectedSequence = currentProducerSequence;
@@ -228,6 +230,7 @@ public class ModernHighPerformanceMPMCQueue<T> {
 
     /**
      * 非阻塞出队操作
+     *
      * @return 队列头部元素，如果队列为空则返回null
      */
     public T poll() {
@@ -243,7 +246,7 @@ public class ModernHighPerformanceMPMCQueue<T> {
 
         while (true) {
             currentConsumerSequence = getConsumerSequence();
-            element = buffer[(int)(currentConsumerSequence & mask)];
+            element = buffer[(int) (currentConsumerSequence & mask)];
             final long expectedSequence = currentConsumerSequence + 1;
 
             if (element.getSequence() != expectedSequence) {
@@ -284,7 +287,8 @@ public class ModernHighPerformanceMPMCQueue<T> {
 
     /**
      * 批量入队操作
-     * @param items 要入队的元素数组
+     *
+     * @param items  要入队的元素数组
      * @param offset 开始位置
      * @param length 要处理的元素数量
      * @return 实际入队的元素数量
@@ -315,8 +319,9 @@ public class ModernHighPerformanceMPMCQueue<T> {
 
     /**
      * 批量出队操作
-     * @param items 用于存储出队元素的数组
-     * @param offset 开始存储的位置
+     *
+     * @param items     用于存储出队元素的数组
+     * @param offset    开始存储的位置
      * @param maxLength 最大出队数量
      * @return 实际出队的元素数量
      */
@@ -342,6 +347,7 @@ public class ModernHighPerformanceMPMCQueue<T> {
 
     /**
      * 阻塞式入队，直到成功或被中断
+     *
      * @param item 要入队的元素
      * @throws InterruptedException 如果线程被中断
      */
@@ -356,6 +362,7 @@ public class ModernHighPerformanceMPMCQueue<T> {
 
     /**
      * 阻塞式出队，直到有元素或被中断
+     *
      * @return 队列头部元素
      * @throws InterruptedException 如果线程被中断
      */
@@ -372,6 +379,7 @@ public class ModernHighPerformanceMPMCQueue<T> {
 
     /**
      * 带超时的出队操作
+     *
      * @param timeoutNanos 超时时间（纳秒）
      * @return 队列头部元素，超时返回null
      */
@@ -391,6 +399,7 @@ public class ModernHighPerformanceMPMCQueue<T> {
 
     /**
      * 获取队列大小（近似值）
+     *
      * @return 队列中的元素数量
      */
     public int size() {
@@ -401,6 +410,7 @@ public class ModernHighPerformanceMPMCQueue<T> {
 
     /**
      * 检查队列是否为空
+     *
      * @return true如果队列为空
      */
     public boolean isEmpty() {
@@ -409,6 +419,7 @@ public class ModernHighPerformanceMPMCQueue<T> {
 
     /**
      * 获取队列容量
+     *
      * @return 队列容量
      */
     public int capacity() {
@@ -456,6 +467,7 @@ public class ModernHighPerformanceMPMCQueue<T> {
 
     /**
      * 获取详细统计信息
+     *
      * @return 统计信息字符串
      */
     public String getStats() {
@@ -483,6 +495,7 @@ public class ModernHighPerformanceMPMCQueue<T> {
 
     /**
      * 获取竞争度（重试次数与总操作数的比例）
+     *
      * @return 竞争度，越低越好
      */
     public double getContentionLevel() {

@@ -319,8 +319,8 @@ public class QueueComparisonTest {
 
         return new LatencyResult(
                 latencies[iterations / 2],                    // P50
-                latencies[(int)(iterations * 0.95)],          // P95
-                latencies[(int)(iterations * 0.99)]           // P99
+                latencies[(int) (iterations * 0.95)],          // P95
+                latencies[(int) (iterations * 0.99)]           // P99
         );
     }
 

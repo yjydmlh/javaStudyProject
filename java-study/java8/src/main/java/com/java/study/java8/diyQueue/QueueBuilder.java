@@ -9,6 +9,7 @@ public class QueueBuilder<T> {
 
     /**
      * 创建新的构建器实例
+     *
      * @param <T> 队列元素类型
      * @return 构建器实例
      */
@@ -18,6 +19,7 @@ public class QueueBuilder<T> {
 
     /**
      * 设置队列容量
+     *
      * @param capacity 容量大小，会自动调整为2的幂
      * @return 构建器实例
      */
@@ -31,6 +33,7 @@ public class QueueBuilder<T> {
 
     /**
      * 构建队列实例
+     *
      * @return 配置好的队列实例
      */
     public ModernHighPerformanceMPMCQueue<T> build() {
@@ -94,7 +97,7 @@ class QueueAnalyzer {
             System.out.println("❌ 竞争度高，建议增加容量或减少并发");
         }
 
-        int utilizationPercent = (int)((double)queue.size() / queue.capacity() * 100);
+        int utilizationPercent = (int) ((double) queue.size() / queue.capacity() * 100);
         System.out.printf("队列使用率: %d%%\n", utilizationPercent);
 
         if (utilizationPercent > 80) {
@@ -117,7 +120,7 @@ class QueueAnalyzer {
 
         int size = queue.size();
         int capacity = queue.capacity();
-        double utilization = (double)size / capacity;
+        double utilization = (double) size / capacity;
 
         if (utilization > 0.8) {
             advice.append("- 队列接近满载，建议增加容量\n");
@@ -163,7 +166,7 @@ class QueueMonitor {
      */
     public boolean isHealthy() {
         double contentionLevel = queue.getContentionLevel();
-        double utilization = (double)queue.size() / queue.capacity();
+        double utilization = (double) queue.size() / queue.capacity();
 
         return contentionLevel < 0.1 && utilization < 0.9;
     }
@@ -174,7 +177,7 @@ class QueueMonitor {
     public String getHealthReport() {
         boolean healthy = isHealthy();
         double contentionLevel = queue.getContentionLevel();
-        double utilization = (double)queue.size() / queue.capacity();
+        double utilization = (double) queue.size() / queue.capacity();
 
         return String.format(
                 "健康状态: %s, 竞争度: %.4f, 使用率: %.1f%%",

@@ -118,7 +118,7 @@ public class PerformanceTest {
         System.out.printf("  Offer吞吐量: %,.2f M ops/s\n", offerThroughput / 1_000_000);
         System.out.printf("  Poll吞吐量:  %,.2f M ops/s\n", pollThroughput / 1_000_000);
         System.out.printf("  总体吞吐量: %,.2f M ops/s\n", totalThroughput / 1_000_000);
-        System.out.printf("  平均延迟:   %.2f ns/op\n", (offerTime + pollTime) / (double)(iterations * 2));
+        System.out.printf("  平均延迟:   %.2f ns/op\n", (offerTime + pollTime) / (double) (iterations * 2));
         System.out.println();
     }
 
@@ -271,10 +271,10 @@ public class PerformanceTest {
         System.out.printf("延迟分布 (%,d 次往返操作):\n", iterations);
         System.out.printf("  最小值: %,d ns\n", latencies[0]);
         System.out.printf("  P50:    %,d ns\n", latencies[iterations / 2]);
-        System.out.printf("  P90:    %,d ns\n", latencies[(int)(iterations * 0.9)]);
-        System.out.printf("  P95:    %,d ns\n", latencies[(int)(iterations * 0.95)]);
-        System.out.printf("  P99:    %,d ns\n", latencies[(int)(iterations * 0.99)]);
-        System.out.printf("  P99.9:  %,d ns\n", latencies[(int)(iterations * 0.999)]);
+        System.out.printf("  P90:    %,d ns\n", latencies[(int) (iterations * 0.9)]);
+        System.out.printf("  P95:    %,d ns\n", latencies[(int) (iterations * 0.95)]);
+        System.out.printf("  P99:    %,d ns\n", latencies[(int) (iterations * 0.99)]);
+        System.out.printf("  P99.9:  %,d ns\n", latencies[(int) (iterations * 0.999)]);
         System.out.printf("  最大值: %,d ns\n", latencies[iterations - 1]);
 
         double average = Arrays.stream(latencies).average().orElse(0.0);
@@ -377,7 +377,7 @@ public class PerformanceTest {
             long elapsed = (System.currentTimeMillis() - startTime) / 1000;
             long ops = totalOperations.get();
             System.out.printf("第 %2d 秒: %,d 总操作, %,.2f M ops/s, 队列大小: %d\n",
-                    elapsed, ops, ops / (double)elapsed / 1_000_000, queue.size());
+                    elapsed, ops, ops / (double) elapsed / 1_000_000, queue.size());
         }
 
         running.set(false);
@@ -385,7 +385,7 @@ public class PerformanceTest {
         executor.awaitTermination(5, TimeUnit.SECONDS);
 
         long totalOps = totalOperations.get();
-        double avgThroughput = totalOps / (double)duration / 1_000_000;
+        double avgThroughput = totalOps / (double) duration / 1_000_000;
 
         System.out.printf("\n压力测试结果:\n");
         System.out.printf("  总操作数: %,d\n", totalOps);
