@@ -1,4 +1,4 @@
-package com.java.study.java8.diyQueue;
+package com.java.study.java8.diyQueue.modernQueue;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;

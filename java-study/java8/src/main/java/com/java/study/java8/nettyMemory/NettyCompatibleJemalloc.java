@@ -13,7 +13,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * 完整可编译的Netty兼容JavaJemalloc实现
- * 编译命令：javac --add-modules jdk.incubator.foreign --enable-preview NettyCompatibleJemalloc.java
+ * 编译命令：javac
  * 运行命令：java --add-modules jdk.incubator.foreign --enable-preview NettyCompatibleJemalloc
  */
 public class NettyCompatibleJemalloc {

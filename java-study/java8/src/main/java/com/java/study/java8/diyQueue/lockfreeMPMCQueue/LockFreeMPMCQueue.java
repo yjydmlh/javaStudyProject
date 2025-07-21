@@ -1,4 +1,4 @@
-package com.java.study.java8.diyQueue;
+package com.java.study.java8.diyQueue.lockfreeMPMCQueue;
 
 import java.util.concurrent.atomic.*;
 import java.util.concurrent.locks.LockSupport;

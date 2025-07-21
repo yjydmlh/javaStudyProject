@@ -1,4 +1,4 @@
-package com.java.study.java8.diyQueue;
+package com.java.study.java8.diyQueue.modernQueue;
 
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;

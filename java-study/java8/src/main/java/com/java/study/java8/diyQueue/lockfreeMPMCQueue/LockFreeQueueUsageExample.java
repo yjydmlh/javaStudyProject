@@ -1,4 +1,4 @@
-package com.java.study.java8.diyQueue;
+package com.java.study.java8.diyQueue.lockfreeMPMCQueue;
 
 import java.util.Random;
 import java.util.concurrent.*;
